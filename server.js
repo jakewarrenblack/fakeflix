@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const app = express();
 const port = 3000;
 require("dotenv").config();
+const key = process.env.APP_KEY;
 
 require("./utils/db.js")();
 
@@ -11,28 +12,12 @@ app.use(express.json());
 app.use(express.static("public"));
 
 app.use((req, res, next) => {
-  if (
-    req.headers &&
-    req.headers.authorization &&
-    req.headers.authorization.split(" ")[0] === "Bearer"
-  ) {
-    jwt.verify(
-      req.headers.authorization.split(" ")[1],
-      process.env.APP_KEY,
-      (err, decoded) => {
-        if (err) {
-          req.user = undefined;
-          next();
-        } else {
-          req.user = decoded;
-          next();
-        }
-      }
-    );
-  } else {
-    req.user = undefined;
-    next(); // move onto the next middleware
-  }
+  let header = req.headers?.authorization?.split(" ");
+
+  if (header && header[0] === "Bearer")
+    jwt.verify(header[1], key, (err, decoded) => !err && (req.user = decoded));
+
+  next();
 });
 
 app.use((req, res, next) => {
