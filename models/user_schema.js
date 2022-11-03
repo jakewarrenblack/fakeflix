@@ -4,23 +4,41 @@ const bcrypt = require("bcryptjs");
 // note db properties use snake_case by convention
 const userSchema = Schema(
   {
-    name: {
+    username: {
       type: String,
-      required: [true, "name is required"],
+      required: [true, "Username is required"],
     },
-    email: {
+    type: {
       type: String,
-      required: [true, "Email is required"],
-      // mongoose will provide an error for us just by adding this
-
-      unique: [true, "Email already exists"],
-      // will make emails lowercase
-      lowercase: true,
-      trim: true,
+      // child = literally a child, a kid's account with locked features
+      // admin = account owner, like on netflix, can have many 'users' but one admin
+      enum: ["admin", "user", "child"],
+      required: [true, "Type is required"],
     },
-    password: {
+    avatar: {
+      // refer to avatar schema type here
+    },
+    language: {
       type: String,
-      required: [true, "Password is required"],
+      enum: ["EN", "FR", "DE"],
+      required: [true, "Language is required"],
+    },
+    maturity_setting: {
+      type: String,
+      enum: ["all", "semi-restricted", "restricted"],
+      required: [true, "Maturity setting is required"],
+      default: "all",
+    },
+    autoplay_enabled: {
+      type: Boolean,
+    },
+    my_list: {
+      // favourites, use listing schema as type
+      type: Array,
+    },
+    pin: {
+      // pin to access the account, not required
+      type: Number,
     },
   },
   { timestamps: true }
