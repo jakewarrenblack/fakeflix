@@ -9,12 +9,16 @@ jsf.extend("faker", () => {
 
   faker.locale = "en";
 
+  // I could use findName(), but don't want a prefix,
+  // makes the userNames look strange
+  let tempName = [faker.name.firstName(), faker.name.lastName()];
   faker.custom = {
-    // name: () => {return tempName = faker.name.findName},
-    name: (userName) => {
-      faker.tempName = faker.name.findName;
-
-      return userName ? faker.internet.userName(this.tempName) : this.tempName;
+    userName: () => {
+      return faker.internet.userName(tempName);
+    },
+    name: () => `${tempName[0]} ${tempName[1]}`,
+    email: () => {
+      return faker.internet.email(tempName);
     },
   };
   return faker;
@@ -27,22 +31,19 @@ const userSchema = Schema(
   {
     username: {
       type: String,
-      faker: {
-        "custom.userName": false,
-      },
+      faker: "custom.userName",
+
       required: [true, "Username is required"],
     },
     name: {
       type: String,
-      faker: {
-        "custom.userName": true,
-      },
+      faker: "custom.name",
 
       required: [true, "Name field is required"],
     },
     email: {
       type: String,
-      faker: "internet.email",
+      faker: "custom.email",
       required: [true, "Email is required"],
     },
     type: {
