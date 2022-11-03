@@ -11,8 +11,9 @@ const avatarSchema = Schema({
   },
   // plan to use Mongoose 'Population' to tie this to a real movie title,
   // e.g 'batman' avatar from 'batman forever', etc.
-  movie_name: {
-    type: String,
+  movie: {
+    type: Schema.Types.ObjectId,
+    ref: "Listing",
     required: [true, "Movie name field is required"],
   },
 });

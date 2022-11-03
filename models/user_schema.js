@@ -1,12 +1,49 @@
-const { Schema, model } = require("mongoose");
 const bcrypt = require("bcryptjs");
+const mongoose = require("mongoose-schema-jsonschema")();
+const { Schema, model } = mongoose;
+require("mongoose-schema-jsonschema")(mongoose);
+const jsf = require("json-schema-faker");
+
+jsf.extend("faker", () => {
+  const faker = require("faker");
+
+  faker.locale = "en";
+
+  faker.custom = {
+    // name: () => {return tempName = faker.name.findName},
+    name: (userName) => {
+      faker.tempName = faker.name.findName;
+
+      return userName ? faker.internet.userName(this.tempName) : this.tempName;
+    },
+  };
+  return faker;
+});
+
+const config = require("mongoose-schema-jsonschema/config");
 
 // note db properties use snake_case by convention
 const userSchema = Schema(
   {
     username: {
       type: String,
+      faker: {
+        "custom.userName": false,
+      },
       required: [true, "Username is required"],
+    },
+    name: {
+      type: String,
+      faker: {
+        "custom.userName": true,
+      },
+
+      required: [true, "Name field is required"],
+    },
+    email: {
+      type: String,
+      faker: "internet.email",
+      required: [true, "Email is required"],
     },
     type: {
       type: String,
@@ -17,6 +54,8 @@ const userSchema = Schema(
     },
     avatar: {
       // refer to avatar schema type here
+      type: Schema.Types.ObjectId,
+      ref: "Avatar",
     },
     language: {
       type: String,
@@ -34,11 +73,13 @@ const userSchema = Schema(
     },
     my_list: {
       // favourites, use listing schema as type
-      type: Array,
+      type: [String],
     },
     pin: {
       // pin to access the account, not required
       type: Number,
+      // TODO: generate real pin, this doesn't work
+      faker: "finance.pin",
     },
   },
   { timestamps: true }
@@ -55,5 +96,22 @@ userSchema.methods.comparePassword = function (password) {
     return result; // returns true or false
   });
 };
+
+// conversion to json schema was ignoring the 'faker' field in its result
+// this is needed to ensure json-schema-faker can run the faker methods we want
+const fieldOptionsMapping = {
+  faker: "faker",
+};
+
+config({ fieldOptionsMapping });
+// first converting mongoose schema to json schema
+const testing = userSchema.jsonSchema();
+
+console.log("-----------");
+
+// json-schema-faker takes our json schema and populates with fake data to match
+const jsonSchema = jsf.resolve(testing).then((result) => {
+  console.table(result);
+});
 
 module.exports = model("User", userSchema);

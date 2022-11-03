@@ -52,6 +52,28 @@ const login = (req, res) => {
     });
 };
 
+const editProfile = () => {
+  throw new Error("Not yet implemented");
+};
+
+const deleteProfile = () => {
+  throw new Error("Not yet implemented");
+};
+
+const viewProfile = () => {
+  throw new Error("Not yet implemented");
+};
+
+// as in, admin can manage sub profiles
+const manageProfiles = () => {
+  throw new Error("Not yet implemented");
+};
+
+// favourites list
+const viewMyList = () => {
+  throw new Error("Not yet implemented");
+};
+
 module.exports = {
   register,
   login,

@@ -11,11 +11,15 @@
   "author": "Mohammed Che",
   "license": "ISC",
   "dependencies": {
+    "@faker-js/faker": "^7.6.0",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "faker": "^5.5.3",
+    "json-schema-faker": "^0.5.0-rcv.46",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^6.6.5"
+    "mongoose": "^6.6.5",
+    "mongoose-schema-jsonschema": "^2.0.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"

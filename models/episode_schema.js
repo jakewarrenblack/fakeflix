@@ -3,14 +3,10 @@ const { Schema, model } = require("mongoose");
 const episodeSchema = Schema({
   title: {
     type: String,
-    required: [true, "Title field is required"],
+    required: [true, "URL field is required"],
   },
   thumbnail: {
     type: String,
-  },
-  description: {
-    type: String,
-    required: [true, "Description field is required"],
   },
   duration: {
     type: Number,

@@ -1,26 +1,28 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const connect = async () => {
-    let db = null;
+  let db = null;
 
-    try {
-        await mongoose.connect(process.env.DB_ATLAS_URL, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        });
+  try {
+    await mongoose.connect(
+      `${process.env.DB_ATLAS_URL}/CA?retryWrites=true&w=majority`,
+      {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      }
+    );
 
-        console.log("Connected successfully to db");
-        db = mongoose.connection;
+    console.log("Connected successfully to db");
+    db = mongoose.connection;
+    //console.log(db);
+  } catch (error) {
+    console.log(error);
+  } finally {
+    if (db !== null && db.readyState === 1) {
+      // await db.close();
+      // console.log("Disconnected successfully from db");
     }
-    catch(error) {
-        console.log(error);
-    }
-    finally {
-        if(db !== null && db.readyState === 1) {
-            // await db.close();
-            // console.log("Disconnected successfully from db");
-        }
-    }
+  }
 };
 
 module.exports = connect;

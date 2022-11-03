@@ -1,4 +1,4 @@
-const Festival = require("../models/festival_schema");
+// const Festival = require("../models/festival_schema");
 
 const readData = (req, res) => {
   Festival.find()
