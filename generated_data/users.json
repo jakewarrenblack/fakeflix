@@ -1,0 +1,50 @@
+[
+  {
+    "firstName": "customAvatar",
+    "lastName": "customAvatar",
+    "username": "qui",
+    "email": "enim",
+    "password": "magna",
+    "type": "user",
+    "language": "FR",
+    "maturity_setting": "semi-restricted",
+    "updatedAt": "2017-04-29T03:26:51.0Z",
+    "autoplay_enabled": false,
+    "avatar": "https://api.minimalavatars.com/avatar/random/png",
+    "createdAt": "1971-07-29T06:07:41.0Z",
+    "my_list": [
+      "quis mollit",
+      "dolore sunt irure labore",
+      "minim",
+      "culpa sed laborum reprehenderit magna",
+      "in"
+    ],
+    "__v": 7801526.324673131,
+    "pin": 7526620.720132098,
+    "_id": "bC65Ead7Bb4EB6b6ecc3C75a"
+  },
+  {
+    "firstName": "customAvatar",
+    "lastName": "customAvatar",
+    "username": "non",
+    "email": "esse",
+    "password": "eu Ut aute",
+    "type": "user",
+    "language": "EN",
+    "maturity_setting": "restricted",
+    "createdAt": "1945-12-21T01:43:28.0Z",
+    "updatedAt": "1995-10-20T05:26:37.0Z",
+    "pin": -54356226.96801348,
+    "avatar": "https://api.minimalavatars.com/avatar/random/png",
+    "_id": "B5aa73688B0ADd29C62B750a",
+    "autoplay_enabled": true,
+    "__v": -80400233.42706557,
+    "my_list": [
+      "cupidatat",
+      "fugiat",
+      "Lorem est id Ut",
+      "veniam pariatur eiusmod",
+      "est ullamco eiusmod elit in"
+    ]
+  }
+]

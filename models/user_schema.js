@@ -32,6 +32,11 @@ const userSchema = Schema(
       },
       required: [true, "Email is required"],
     },
+    password: {
+      type: String,
+      faker: "internet.password",
+      required: [true, "Password is required"],
+    },
     type: {
       type: String,
       // child = literally a child, a kid's account with locked features
@@ -40,8 +45,9 @@ const userSchema = Schema(
       required: [true, "Type is required"],
     },
     avatar: {
-      // refer to avatar schema type here
-      type: Schema.Types.ObjectId,
+      // Originally intended to refer to another object here, but think placeholder images are better?
+      type: String,
+      faker: "custom",
       ref: "Avatar",
     },
     language: {
@@ -57,16 +63,17 @@ const userSchema = Schema(
     },
     autoplay_enabled: {
       type: Boolean,
+      default: true,
     },
     my_list: {
       // favourites, use listing schema as type
       type: [String],
     },
     pin: {
-      // pin to access the account, not required
+      // pin to access the account, not required, maybe user doesn't want to set one
+      // (this isn't the password), but to stop e.g. users on a family account accessing each others
       type: Number,
-      // TODO: generate real pin, this doesn't work
-      faker: "finance.pin",
+      faker: "datatype.number",
     },
   },
   { timestamps: true }

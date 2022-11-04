@@ -1,17 +1,22 @@
-const mongoose = require("mongoose-schema-jsonschema")();
-require("mongoose-schema-jsonschema")(mongoose);
 const jsf = require("json-schema-faker");
-const faker = require("faker");
-jsf.extend("faker", () => faker);
-const config = require("mongoose-schema-jsonschema/config");
+const faker = require("@withshepherd/faker");
 
-const fieldOptionsMapping = {
-  faker: "faker",
-};
+const fakerMaker = async (qty, schema, method) => {
+  jsf.extend("faker", () => {
+    // if methods provided, apply them to the extensions
+    return method
+      ? (faker.custom = method)
+      : // otherwise, just use base faker
+        faker;
+  });
+  const config = require("mongoose-schema-jsonschema/config");
 
-config({ fieldOptionsMapping });
+  const fieldOptionsMapping = {
+    faker: "faker",
+  };
 
-const fakerMaker = async (qty, schema) => {
+  config({ fieldOptionsMapping });
+
   const jsonSchema = schema.jsonSchema();
   objects = [];
 
