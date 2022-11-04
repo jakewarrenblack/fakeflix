@@ -1,0 +1,36 @@
+[
+  {
+    "firstName": "Granville",
+    "lastName": "Durgan",
+    "username": "Granville26",
+    "email": "Granville9@yahoo.com",
+    "type": "user",
+    "language": "DE",
+    "maturity_setting": "semi-restricted",
+    "avatar": "85e0Fc16CC9A01586A516Bfd",
+    "pin": 20733993.08550048,
+    "my_list": ["in", "consectetur cupidatat sit dolor nostrud"],
+    "_id": "c60e1e0CC9c7C5A96D12fBC8",
+    "updatedAt": "1996-01-26T02:29:17.0Z",
+    "createdAt": "1960-04-19T08:42:34.0Z",
+    "autoplay_enabled": true,
+    "__v": -18942965.42782432
+  },
+  {
+    "firstName": "Micaela",
+    "lastName": "Stanton",
+    "username": "Micaela_Stanton",
+    "email": "Micaela16@gmail.com",
+    "type": "child",
+    "language": "DE",
+    "maturity_setting": "all",
+    "autoplay_enabled": true,
+    "avatar": "54DE3b9aAEDC2bc4D741A07d",
+    "my_list": ["aliqua minim enim sunt ad", "ex"],
+    "updatedAt": "1971-07-21T01:45:26.0Z",
+    "pin": 31458421.426912427,
+    "_id": "EaCBcD6cca4e4E451ACDc20A",
+    "createdAt": "1984-10-31T17:06:10.0Z",
+    "__v": 10709004.248486489
+  }
+]
