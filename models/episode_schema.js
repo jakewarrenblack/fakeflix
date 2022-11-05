@@ -1,9 +1,15 @@
 const { Schema, model } = require("mongoose");
 
 const episodeSchema = Schema({
-  title: {
+  // refer to listing object
+  listing: {
+    type: Schema.Types.ObjectId,
+    ref: "Listing",
+    required: [true, "Episode must refer to a listing. Provide an object id."],
+  },
+  episode_title: {
     type: String,
-    required: [true, "URL field is required"],
+    required: [true, "Episode title field is required"],
   },
   thumbnail: {
     type: String,

@@ -1,1 +1,61 @@
-[{"firstName":"Kamryn","lastName":"Armstrong","username":"Kamryn.Armstrong","email":"Kamryn34@gmail.com","password":"6oozvP7Eyk68V1D","type":"user","language":"FR","maturity_setting":"semi-restricted","autoplay_enabled":true,"createdAt":"1964-05-01T03:42:58.0Z","pin":42136,"_id":"E1DCcba520B38aFf6D7eEe08","__v":40630170.5507611,"avatar":"AACEBee79e05A075704a30cB","my_list":["non ut","sit ipsum laboris mollit sed","et deserunt consequat id"],"updatedAt":"1948-11-11T15:53:57.0Z"},{"url":"proident","name":"altruistic","movie":"3beBbe9fAB4B1Ab26bae00DA","_id":"1aD4fccE3c14ad566FebC3F4"},{"firstName":"Reuben","lastName":"Johnson","username":"Reuben_Johnson50","email":"Reuben.Johnson@yahoo.com","password":"RfFTs18do09slmJ","type":"user","language":"FR","maturity_setting":"restricted","pin":8774,"__v":49397845.512209535,"createdAt":"1973-04-10T06:54:28.0Z","autoplay_enabled":true,"my_list":["ipsum velit dolore amet","Duis pariatur","sint commodo irure incididunt","labore","incididunt nisi fugiat Excepteur eiusmod"],"updatedAt":"1963-11-02T08:55:18.0Z","avatar":"1A9C1f251Dc34A98E6C69Ceb","_id":"DfeCEe7Ea7bc8104Ae77bDBD"},{"url":"mollit in in officia","name":"grouchy","movie":"13a66a9Aeed9cCF366662E2b","__v":-48785021.03114686,"_id":"6E62bb92f3EdD4Bc15b4E95c"}]
+[
+  {
+    "firstName": "Kamryn",
+    "lastName": "Armstrong",
+    "username": "Kamryn.Armstrong",
+    "email": "Kamryn34@gmail.com",
+    "password": "6oozvP7Eyk68V1D",
+    "type": "user",
+    "language": "FR",
+    "maturity_setting": "semi-restricted",
+    "autoplay_enabled": true,
+    "createdAt": "1964-05-01T03:42:58.0Z",
+    "pin": 42136,
+    "_id": "E1DCcba520B38aFf6D7eEe08",
+    "__v": 40630170.5507611,
+    "avatar": "AACEBee79e05A075704a30cB",
+    "my_list": [
+      "non ut",
+      "sit ipsum laboris mollit sed",
+      "et deserunt consequat id"
+    ],
+    "updatedAt": "1948-11-11T15:53:57.0Z"
+  },
+  {
+    "url": "proident",
+    "name": "altruistic",
+    "movie": "3beBbe9fAB4B1Ab26bae00DA",
+    "_id": "1aD4fccE3c14ad566FebC3F4"
+  },
+  {
+    "firstName": "Reuben",
+    "lastName": "Johnson",
+    "username": "Reuben_Johnson50",
+    "email": "Reuben.Johnson@yahoo.com",
+    "password": "RfFTs18do09slmJ",
+    "type": "user",
+    "language": "FR",
+    "maturity_setting": "restricted",
+    "pin": 8774,
+    "__v": 49397845.512209535,
+    "createdAt": "1973-04-10T06:54:28.0Z",
+    "autoplay_enabled": true,
+    "my_list": [
+      "ipsum velit dolore amet",
+      "Duis pariatur",
+      "sint commodo irure incididunt",
+      "labore",
+      "incididunt nisi fugiat Excepteur eiusmod"
+    ],
+    "updatedAt": "1963-11-02T08:55:18.0Z",
+    "avatar": "1A9C1f251Dc34A98E6C69Ceb",
+    "_id": "DfeCEe7Ea7bc8104Ae77bDBD"
+  },
+  {
+    "url": "mollit in in officia",
+    "name": "grouchy",
+    "movie": "13a66a9Aeed9cCF366662E2b",
+    "__v": -48785021.03114686,
+    "_id": "6E62bb92f3EdD4Bc15b4E95c"
+  }
+]

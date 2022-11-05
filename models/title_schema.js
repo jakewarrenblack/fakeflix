@@ -12,6 +12,7 @@ const titleSchema = Schema(
       type: String,
       required: [true, "Title field is required"],
     },
+    // If it's a show, it's an EPISODE, not an entire SERIES
     type: {
       type: String,
       enum: ["SHOW", "MOVIE"],
@@ -59,6 +60,15 @@ const titleSchema = Schema(
     tmdb_popularity: { type: Number },
 
     tmdb_score: { type: Number },
+    // to validate based on user's plan when requesting
+    // basic plan retrieves 'good', standard retrieves, 'better', etc
+    // we have all listings in all qualities,
+    // so return an error if permission mismatch
+    // e.g. basic user requests best quality
+    video_quality: {
+      type: String,
+      enum: ["Good", "Better", "Best"],
+    },
   },
   { timestamps: true }
 );

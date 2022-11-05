@@ -19,6 +19,7 @@ const userSchema = Schema(
     },
     username: {
       type: String,
+      // generate userName based on first and last name
       faker: {
         "internet.userName": ["#{firstName}", "#{lastName}"],
       },
@@ -27,6 +28,7 @@ const userSchema = Schema(
     },
     email: {
       type: String,
+      // generate email based on firstName and lastName
       faker: {
         "internet.email": ["#{firstName}", "#{lastName}"],
       },
@@ -48,6 +50,7 @@ const userSchema = Schema(
       // refer to avatar schema type here
       type: Schema.Types.ObjectId,
       ref: "Avatar",
+      // faker: "custom_method",
     },
     language: {
       type: String,
@@ -57,7 +60,10 @@ const userSchema = Schema(
     maturity_setting: {
       type: String,
       enum: ["all", "semi-restricted", "restricted"],
-      required: [true, "Maturity setting is required"],
+      required: [
+        true,
+        "Maturity setting is required. All, semi-restricted, or restricted.",
+      ],
       default: "all",
     },
     autoplay_enabled: {
@@ -73,6 +79,11 @@ const userSchema = Schema(
       // (this isn't the password), but to stop e.g. users on a family account accessing each others
       type: Number,
       faker: "datatype.number",
+    },
+    plan: {
+      type: String,
+      enum: ["Basic", "Standard", "Premium"],
+      required: [true, "Plan is required. Basic, standard, or premium."],
     },
   },
   { timestamps: true }
@@ -90,6 +101,9 @@ userSchema.methods.comparePassword = function (password) {
   });
 };
 
+// Exporting these separately,
+// faker script needs the schema itself,
+// not the model
 module.exports = {
   model: model("User", userSchema),
   schema: userSchema,
