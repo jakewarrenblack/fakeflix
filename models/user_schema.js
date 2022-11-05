@@ -45,9 +45,8 @@ const userSchema = Schema(
       required: [true, "Type is required"],
     },
     avatar: {
-      // Originally intended to refer to another object here, but think placeholder images are better?
-      type: String,
-      faker: "custom",
+      // refer to avatar schema type here
+      type: Schema.Types.ObjectId,
       ref: "Avatar",
     },
     language: {

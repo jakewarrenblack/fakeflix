@@ -1,12 +1,15 @@
-const { Schema, model } = require("mongoose");
+const mongoose = require("mongoose-schema-jsonschema")();
+const { Schema, model } = mongoose;
 
 const avatarSchema = Schema({
   url: {
     type: String,
     required: [true, "URL field is required"],
+    faker: "custom_method",
   },
   name: {
     type: String,
+    faker: "word.interjection",
     required: [true, "Name field is required"],
   },
   // plan to use Mongoose 'Population' to tie this to a real movie title,
@@ -18,4 +21,7 @@ const avatarSchema = Schema({
   },
 });
 
-module.exports = model("Avatar", avatarSchema);
+module.exports = {
+  model: model("Avatar", avatarSchema),
+  schema: avatarSchema,
+};

@@ -1,14 +1,15 @@
 const jsf = require("json-schema-faker");
 const faker = require("@withshepherd/faker");
 
-const fakerMaker = async (qty, schema, method) => {
-  jsf.extend("faker", () => {
-    // if methods provided, apply them to the extensions
-    return method
-      ? (faker.custom = method)
-      : // otherwise, just use base faker
-        faker;
-  });
+const fakerMaker = async (qty, schema, method = undefined) => {
+  jsf.extend("faker", () =>
+    method != undefined
+      ? {
+          ...faker,
+          custom_method: method,
+        }
+      : faker
+  );
   const config = require("mongoose-schema-jsonschema/config");
 
   const fieldOptionsMapping = {
@@ -16,7 +17,6 @@ const fakerMaker = async (qty, schema, method) => {
   };
 
   config({ fieldOptionsMapping });
-
   const jsonSchema = schema.jsonSchema();
   objects = [];
 
