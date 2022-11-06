@@ -14,7 +14,8 @@ const getFavourites = async (qty = 1) => {
     let title = await Title.findOne()
       .skip(random)
       .then((res) => {
-        return res;
+        console.log(res._id);
+        return res._id.toString();
       });
 
     favourites.push(title);

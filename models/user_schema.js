@@ -74,7 +74,7 @@ const userSchema = Schema(
     },
     // Refer to an array of Listings (Favourite programmes/films)
     my_list: {
-      type: [Title],
+      type: [Schema.Types.ObjectId],
       ref: "Listing",
       faker: "favourites",
       required: true,

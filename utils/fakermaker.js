@@ -19,14 +19,21 @@ const fakerMaker = async (qty, schema, method = undefined, favouritesQty) => {
       jsf.option("uniqueItems", true);
     }
 
-    jsf.extend("faker", () =>
-      method != undefined
-        ? {
-            ...faker,
-            custom_method: method,
-          }
-        : { ...faker, favourites: favourites }
-    );
+    // jsf.extend("faker", () =>
+    //   method != undefined
+    //     ? {
+    //         ...faker,
+    //         custom_method: method,
+    //       }
+    //     : { ...faker, favourites: favourites }
+    // );
+
+    jsf.extend("faker", () => {
+      return {
+        ...faker,
+        favourites: favourites,
+      };
+    });
 
     // necessary to include this,
     // without it, the 'faker' keyword would be removed from the schema
