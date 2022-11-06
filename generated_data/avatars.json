@@ -1,14 +1,12 @@
 [
   {
-    "url": "https://api.minimalavatars.com/avatar/random/png",
-    "name": "ah",
-    "movie": "A4ABdca01F14fa2D521a5140"
+    "name": "yuck",
+    "img": "https://ca1-avatars.s3.eu-west-1.amazonaws.com/1.png"
   },
   {
-    "url": "https://api.minimalavatars.com/avatar/random/png",
-    "name": "uh-huh",
-    "movie": "Fd1c4B27fccE9105CF327599",
-    "__v": 67872830.32129991,
-    "_id": "B10Dbfe0dA95fd4EFa3CA52B"
+    "name": "ick",
+    "img": "https://ca1-avatars.s3.eu-west-1.amazonaws.com/3.png",
+    "__v": 82057633.62511256,
+    "_id": "4Cf0bA0Dd1C9B5F0E4C76Cb7"
   }
 ]

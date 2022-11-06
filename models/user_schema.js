@@ -2,6 +2,8 @@ const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose-schema-jsonschema")();
 const { Schema, model } = mongoose;
 
+const Title = require("./title_schema").schema;
+
 // note db properties use snake_case by convention
 const userSchema = Schema(
   {
@@ -70,10 +72,16 @@ const userSchema = Schema(
       type: Boolean,
       default: true,
     },
+    // Refer to an array of Listings (Favourite programmes/films)
     my_list: {
-      // favourites, use listing schema as type
-      type: [String],
+      type: [Title],
+      ref: "Listing",
+      faker: "favourites",
+      required: true,
+      maxItems: 2,
+      uniqueItems: true,
     },
+
     pin: {
       // pin to access the account, not required, maybe user doesn't want to set one
       // (this isn't the password), but to stop e.g. users on a family account accessing each others

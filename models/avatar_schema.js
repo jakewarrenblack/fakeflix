@@ -10,9 +10,9 @@ const avatarSchema = Schema({
     required: [true, "Name field is required"],
   },
   img: {
-    data: Buffer | String,
-    contentType: String,
+    type: String,
     required: [true, "Avatar must have an image"],
+    faker: "custom_method",
   },
 });
 
