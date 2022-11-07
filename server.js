@@ -28,6 +28,7 @@ app.use((req, res, next) => {
 
 app.use("/api/users", require("./routes/users"));
 app.use("/api/festivals", require("./routes/festivals"));
+app.use("/api/avatars", require("./routes/avatars"));
 
 app.use("/api/titles", require("./routes/titles"));
 

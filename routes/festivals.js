@@ -15,7 +15,7 @@ router
   // Makes them all protected routes expect root
   // makes this a 'router level' middleware
   .get("/:id", loginRequired, readOne)
-  .post("/", loginRequired, createData)
+  .post("/", createData)
   .put("/:id", loginRequired, updateData)
   .delete("/:id", loginRequired, deleteData);
 

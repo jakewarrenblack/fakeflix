@@ -1,5 +1,3 @@
-const { Mongoose } = require("mongoose");
-
 const mongoose = require("mongoose-schema-jsonschema")();
 const { Schema, model } = mongoose;
 
@@ -12,7 +10,7 @@ const avatarSchema = Schema({
   img: {
     type: String,
     required: [true, "Avatar must have an image"],
-    faker: "custom_method",
+    faker: "get_image",
   },
 });
 

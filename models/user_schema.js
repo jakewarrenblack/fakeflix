@@ -38,7 +38,7 @@ const userSchema = Schema(
     },
     password: {
       type: String,
-      faker: "internet.password",
+      faker: "hashPassword",
       required: [true, "Password is required"],
     },
     type: {
@@ -52,7 +52,8 @@ const userSchema = Schema(
       // refer to avatar schema type here
       type: Schema.Types.ObjectId,
       ref: "Avatar",
-      // faker: "custom_method",
+      faker: "avatar",
+      required: [true, "User must have an avatar"],
     },
     language: {
       type: String,

@@ -1,37 +1,40 @@
 const jsf = require("json-schema-faker");
-// This person had a more recent fork of faker
 const faker = require("@withshepherd/faker");
+const bcrypt = require("bcryptjs");
+const { getAvatar, getFavourites, getImage } = require("./seed_helpers");
+const user_schema = require("../models/user_schema").schema;
 
-const getFavourites = require("./getFavourites");
-
-const fakerMaker = async (qty, schema, method = undefined, favouritesQty) => {
+const fakerMaker = async (qty, schema) => {
   objects = [];
   for (var i = 0; i < qty; i++) {
     let favourites = [];
+    let avatar, hashPassword;
 
-    if (favouritesQty) {
-      await getFavourites(favouritesQty).then((res) => {
+    if (schema == user_schema) {
+      // Let's say a user has up to 12 favourites
+      const random = Math.floor(Math.random() * 12) + 1;
+
+      await getFavourites(random).then((res) => {
         favourites = res;
-        favourites.forEach((fav) => console.log(fav));
       });
 
-      jsf.option("maxItems", favouritesQty);
-      jsf.option("uniqueItems", true);
-    }
+      hashPassword = () => bcrypt.hashSync(faker.internet.password(), 10);
 
-    // jsf.extend("faker", () =>
-    //   method != undefined
-    //     ? {
-    //         ...faker,
-    //         custom_method: method,
-    //       }
-    //     : { ...faker, favourites: favourites }
-    // );
+      jsf.option("maxItems", random);
+      jsf.option("uniqueItems", true);
+
+      await getAvatar().then((res) => {
+        avatar = res;
+      });
+    }
 
     jsf.extend("faker", () => {
       return {
         ...faker,
-        favourites: favourites,
+        favourites,
+        get_image: getImage(i + 1),
+        avatar,
+        hashPassword,
       };
     });
 

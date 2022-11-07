@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "node server.js",
     "dev": "nodemon server.js",
-    "testfaker": "node test.js"
+    "seed": "node seed.js"
   },
   "author": "Mohammed Che",
   "license": "ISC",
