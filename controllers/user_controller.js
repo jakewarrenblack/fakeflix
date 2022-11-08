@@ -180,11 +180,12 @@ const manageProfiles = async (req, res) => {
 };
 
 // favourites list
-const viewMyList = async (req, res) => {
+const viewMyList = (req, res) => {
   //  .find() expects this to be a function,
   // generate a valid mongo user ID from the user ID string
   const id = () => mongoose.mongo.ObjectId(req.user._id);
-  await User.find({ _id: id() })
+  // Only returning username from User, so we could display e.g. 'joe.bloggs98's favourites' in the frontend
+  User.find({ _id: id() }, "username")
     .populate("my_list")
     .then((data) => {
       if (data.length) {
@@ -202,7 +203,37 @@ const viewMyList = async (req, res) => {
     });
 };
 
+const viewAvatars = (req, res) => {
+  //  .find() expects this to be a function,
+  // generate a valid mongo user ID from the user ID string
+  const id = () => mongoose.mongo.ObjectId(req.user._id);
+  // Again here only returning the username
+  // So we could have a page with usernames and avatars
+  User.find(
+    {
+      $or: [{ _id: id() }, { admin: id() }],
+    },
+    "username"
+  )
+    .populate("avatar", "img")
+    .then((data) => {
+      if (data.length) {
+        console.log(data);
+        if (data.length > 0) {
+          res.status(200).json(data);
+        } else {
+          res.status(404).json("No users found");
+        }
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+};
+
 module.exports = {
+  viewAvatars,
   viewMyList,
   manageProfiles,
   viewProfile,

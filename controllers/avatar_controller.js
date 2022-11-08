@@ -1,11 +1,22 @@
 const Avatar = require("../models/avatar_schema").model;
 
 const viewAll = (req, res) => {
-  throw new Error("Not yet implemented");
+  Avatar.find()
+    .then((data) => {
+      console.log(data);
+      if (data.length > 0) {
+        res.status(200).json(data);
+      } else {
+        res.status(404).json("None found");
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
 };
 
 const createData = (req, res) => {
-  // console.log(req.body);
   let avatarData = req.body;
 
   Avatar.create(avatarData)
@@ -26,10 +37,6 @@ const createData = (req, res) => {
       }
     });
 };
-
-// const viewAll = () => {
-
-// }
 
 module.exports = {
   viewAll,
