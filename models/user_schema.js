@@ -4,10 +4,11 @@ const { Schema, model } = mongoose;
 
 // note db properties use snake_case by convention
 const userSchema = Schema(
-  // purposely generating these manually,
-  // i need to refer to them before they've been inserted into the DB
   {
-    // TODO: unsure if this will break when I'm trying to manually insert a user?
+    // I'm generating these manually so I can refer to them as admin IDs before inserting
+    // during seeding
+
+    // This would mean we need to insert an _id every time we register, but will fix this in user_controller
     _id: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -81,7 +82,7 @@ const userSchema = Schema(
     // Refer to an array of Listings (Favourite programmes/films)
     my_list: {
       type: [Schema.Types.ObjectId],
-      ref: "Listing",
+      ref: "Title",
       faker: "favourites",
       required: true,
     },

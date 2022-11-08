@@ -27,6 +27,10 @@ const createData = (req, res) => {
     });
 };
 
+// const viewAll = () => {
+
+// }
+
 module.exports = {
   viewAll,
   createData,
