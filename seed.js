@@ -32,7 +32,7 @@ const generator = async () => {
 
   // print in green
   console.log("\x1b[32m", "\nSeeding complete!");
-  process.exit(1);
+  //process.exit(1);
 };
 
 generator();

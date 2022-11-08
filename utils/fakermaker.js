@@ -20,7 +20,7 @@ const timer = () => {
 const fakerMaker = async (qty, type) => {
   const schema = type.schema;
   console.log(`\nNow seeding ${type.model.modelName}...\n`);
-  timer();
+  //timer();
   objects = [];
 
   for (var i = 0; i < qty; i++) {
