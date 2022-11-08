@@ -23,7 +23,7 @@ const getAvatar = async () => {
 // Getting random Title IDs for populating users with fake favourites
 const getFavourites = async (qty = 1) => {
   // Find out how many titles there are
-  let count = await Title.estimatedDocumentCount();
+  let count = await Title.countDocuments();
   if (count > 0) {
     let favourites = [];
     for (var i = 0; i < qty; i++) {

@@ -12,7 +12,6 @@
   "author": "Mohammed Che",
   "license": "ISC",
   "dependencies": {
-    "@faker-js/faker": "^7.6.0",
     "@withshepherd/faker": "^5.5.5",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.0.3",

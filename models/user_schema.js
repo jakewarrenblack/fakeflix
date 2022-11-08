@@ -2,11 +2,16 @@ const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose-schema-jsonschema")();
 const { Schema, model } = mongoose;
 
-const Title = require("./title_schema").schema;
-
 // note db properties use snake_case by convention
 const userSchema = Schema(
+  // purposely generating these manually,
+  // i need to refer to them before they've been inserted into the DB
   {
+    // TODO: unsure if this will break when I'm trying to manually insert a user?
+    _id: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
     firstName: {
       type: String,
       faker: "name.firstName",
@@ -79,8 +84,17 @@ const userSchema = Schema(
       ref: "Listing",
       faker: "favourites",
       required: true,
-      maxItems: 2,
-      uniqueItems: true,
+    },
+    // 'child' or 'user' types will have an account admin
+    admin: {
+      type: Schema.Types.ObjectId,
+      faker: "getID",
+      ref: "User",
+
+      required: [
+        validateAdmin,
+        "Users of type 'child' or 'user' must have an admin",
+      ],
     },
 
     pin: {
@@ -97,6 +111,10 @@ const userSchema = Schema(
   },
   { timestamps: true }
 );
+
+function validateAdmin() {
+  return this.type != "admin";
+}
 
 // note 'comparePassword' here is arbitrary, can be whatever name you want
 // we're just adding an object on

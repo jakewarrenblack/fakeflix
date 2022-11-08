@@ -1,5 +1,4 @@
 const { Schema, model } = require("mongoose");
-
 // title can be either a series or a film
 
 const titleSchema = Schema(

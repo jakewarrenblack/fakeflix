@@ -1,5 +1,4 @@
 const fakerMaker = require("./utils/fakermaker");
-const fs = require("fs");
 require("dotenv").config();
 require("./utils/db.js")();
 
@@ -14,25 +13,26 @@ const Avatar = {
 };
 
 const generate = async (qty, type) => {
-  await fakerMaker(qty, type.schema).then((res) => {
-    type.model.insertMany(res, function (err, res) {
-      if (err) {
-        console.log(err);
-      }
-      console.log("Data upload successful");
-    });
+  await fakerMaker(qty, type).then((res, err) => {
+    try {
+      type.model.insertMany(res, function (err, res) {
+        // if (res) console.log(res);
 
-    fs.writeFile(
-      `generated_data/generated.json`,
-      JSON.stringify(res),
-      (err) => {
-        if (err) console.log(err);
-        else {
-          console.log("File written successfully\n");
-        }
-      }
-    );
+        if (err) console.error(`\n${err}`);
+      });
+    } catch (e) {
+      console.error(`\n${e}`);
+    }
   });
 };
 
-generate(10, Avatar).then(() => generate(100, User));
+const generator = async () => {
+  await generate(10, Avatar);
+  await generate(100, User);
+
+  // print in green
+  console.log("\x1b[32m", "\nSeeding complete!");
+  process.exit(1);
+};
+
+generator();
