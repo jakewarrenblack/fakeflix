@@ -1,6 +1,7 @@
 const fakerMaker = require("./utils/fakermaker");
 require("dotenv").config();
-require("./utils/db.js")();
+require("./utils/db")();
+const { default: mongoose } = require("mongoose");
 
 const User = {
   schema: require("./models/user_schema").schema,
@@ -13,16 +14,21 @@ const Avatar = {
 };
 
 const generate = async (qty, type) => {
-  await fakerMaker(qty, type).then((res, err) => {
-    try {
-      type.model.insertMany(res, function (err, res) {
-        // if (res) console.log(res);
+  await type.model.collection.drop().then(async () => {
+    await fakerMaker(qty, type).then(async (res, err) => {
+      try {
+        // Making sure to use .create instead of .insertMany
+        // they're similar, but create uses the 'save' middleware,
+        // meaning we can use this to both create the document, and insert our records
+        await type.model.create(res, function (err, res) {
+          // if (res) console.log(res);
 
-        if (err) console.error(`\n${err}`);
-      });
-    } catch (e) {
-      console.error(`\n${e}`);
-    }
+          if (err) console.error(`\n${err}`);
+        });
+      } catch (e) {
+        console.error(`\n${e}`);
+      }
+    });
   });
 };
 

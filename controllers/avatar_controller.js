@@ -1,5 +1,7 @@
 const Avatar = require("../models/avatar_schema").model;
 
+// TODO: Image upload here
+
 const viewAll = (req, res) => {
   Avatar.find()
     .then((data) => {

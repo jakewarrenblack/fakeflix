@@ -9,6 +9,8 @@ const loginRequired = (req, res, next) => {
   }
 };
 
+// TODO: Add roles to auth? E.g. 'basic' user can't get shows, only movies
+
 module.exports = {
   loginRequired,
 };

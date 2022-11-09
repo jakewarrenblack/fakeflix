@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { default: mongoose } = require("mongoose");
 
+// TODO: Stripe integration as part of this
 const register = (req, res) => {
   let newUser = new User(req.body);
   newUser.password = bcrypt.hashSync(req.body.password, 10);
@@ -100,9 +101,11 @@ const editProfile = (req, res) => {
 };
 
 // TODO: If an admin wants to delete themselves, use the id from the req
-// TODO: Deleting admins, also delete accounts dependent on the admin
-// TODO: Maybe a sub-user can't delete their own profile?
-// TODO: Make sure a user can only delete themselves
+
+// TODO: If deleting an admin, also delete accounts dependent on the admin.
+
+// TODO: Make sure a user can only delete themselves, unless admin, admin can delete their sub-users as well
+
 const deleteProfile = (req, res) => {
   let id = req.params.id;
 
@@ -180,6 +183,7 @@ const manageProfiles = async (req, res) => {
 };
 
 // favourites list
+// TODO: Separate add/remove from list methods?
 const viewMyList = (req, res) => {
   //  .find() expects this to be a function,
   // generate a valid mongo user ID from the user ID string

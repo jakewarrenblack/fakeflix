@@ -5,13 +5,11 @@ const { Schema, model } = mongoose;
 // note db properties use snake_case by convention
 const userSchema = Schema(
   {
-    // I'm generating these manually so I can refer to them as admin IDs before inserting
-    // during seeding
+    // I'm generating these manually so I can refer to them as admin IDs before inserting during seeding
 
-    // This would mean we need to insert an _id every time we register, but will fix this in user_controller
+    // This means we need to insert an _id every time we register, but we fix this in user_controller
     _id: {
       type: Schema.Types.ObjectId,
-      ref: "User",
     },
     firstName: {
       type: String,
@@ -104,10 +102,10 @@ const userSchema = Schema(
       type: Number,
       faker: "datatype.number",
     },
-    plan: {
+    subscription: {
       type: String,
-      enum: ["Basic", "Standard", "Premium"],
-      required: [true, "Plan is required. Basic, standard, or premium."],
+      enum: ["Movies", "Shows", "Movies & Shows"],
+      required: [true, "Plan is required. Shows, Movies, or Movis & Shows."],
     },
   },
   { timestamps: true }

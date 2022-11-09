@@ -41,8 +41,7 @@ const fakerMaker = async (qty, type) => {
       hashPassword = () => bcrypt.hashSync(faker.internet.password(), 10);
       getID = () => mongoose.mongo.ObjectId();
 
-      jsf.option("maxItems", random);
-      jsf.option("uniqueItems", true);
+      jsf.option("alwaysFakeOptionals", true);
 
       await getAvatar().then((res) => {
         avatar = res;
@@ -93,8 +92,12 @@ const fakerMaker = async (qty, type) => {
     objects.forEach((object) => {
       const rand = Math.floor(Math.random() * admins.length);
 
-      if (object.type == "child" || object.type == "user")
-        object.admin = new mongoose.mongo.ObjectId(admins[rand]._id);
+      // A child or user should inherit their plan type from their corresponding admin
+      if (object.type == "child" || object.type == "user") {
+        let admin = admins[rand];
+        object.admin = new mongoose.mongo.ObjectId(admin._id);
+        object.plan = admin.plan;
+      }
     });
   }
 
