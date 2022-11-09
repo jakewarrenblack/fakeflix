@@ -1,46 +1,26 @@
 const jsf = require("json-schema-faker");
 const faker = require("@withshepherd/faker");
 const bcrypt = require("bcryptjs");
-const { getAvatar, getFavourites, getImage } = require("./seed_helpers");
+const { getAvatar, getImage, assignValues } = require("./seed_helpers");
 const user_schema = require("../models/user_schema").schema;
 const mongoose = require("mongoose");
-
-const timer = () => {
-  const lines = ["\\", "|", "/", "-"];
-  let x = 0;
-
-  return setInterval(() => {
-    // \r is for 'inplace'
-    process.stdout.write("\r" + "Seeding... " + lines[x]);
-
-    x < 3 ? x++ : (x = 0);
-  }, 100);
-};
 
 const fakerMaker = async (qty, type) => {
   const schema = type.schema;
   console.log(`\nNow seeding ${type.model.modelName}...\n`);
-  //timer();
-  objects = [];
 
   for (var i = 0; i < qty; i++) {
     let favourites = [];
     let avatar, hashPassword, getID;
     if (schema == user_schema) {
       // Let's say a user has up to 12 favourites
-      const random = Math.floor(Math.random() * 12) + 1;
-
-      await getFavourites(random)
-        .then((res, err) => {
-          favourites = res;
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-
       hashPassword = () => bcrypt.hashSync(faker.internet.password(), 10);
       getID = () => mongoose.mongo.ObjectId();
 
+      /*
+      This option is necessary for generating a temporary admin ID, so as not to throw a validation error before I've replaced the faker ID with the _id of another real object
+      However, this was overwriting my custom 'my_list' method with fake IDs, so custom assignValues method in seed_helpers solves this
+      */
       jsf.option("alwaysFakeOptionals", true);
 
       await getAvatar().then((res) => {
@@ -56,12 +36,10 @@ const fakerMaker = async (qty, type) => {
         avatar,
         hashPassword,
         getID,
-        // admin: async (type) => await getAdmin(type),
       };
     });
 
-    // necessary to include this,
-    // without it, the 'faker' keyword would be removed from the schema
+    // Necessary to include this. Without it, the 'faker' keyword would be removed from the schema
     const config = require("mongoose-schema-jsonschema/config");
     const fieldOptionsMapping = {
       faker: "faker",
@@ -69,35 +47,16 @@ const fakerMaker = async (qty, type) => {
 
     config({ fieldOptionsMapping });
     // .jsonSchema() converts the mongoose schema to JSON schema
-    const jsonSchema = schema.jsonSchema();
+    let jsonSchema = schema.jsonSchema();
 
-    // jsf.resolve runs our faker script
     await jsf.resolve(jsonSchema).then((res) => {
       objects.push(res);
     });
   }
 
   if (schema == user_schema) {
-    let admins = await objects.filter((object) => {
-      if (object.type == "admin") {
-        // this value is being faked, but I don't need it
-        delete object.admin;
-        return {
-          ...object,
-          _id: new mongoose.mongo.ObjectId(),
-        };
-      }
-    });
-
-    objects.forEach((object) => {
-      const rand = Math.floor(Math.random() * admins.length);
-
-      // A child or user should inherit their plan type from their corresponding admin
-      if (object.type == "child" || object.type == "user") {
-        let admin = admins[rand];
-        object.admin = new mongoose.mongo.ObjectId(admin._id);
-        object.plan = admin.plan;
-      }
+    await assignValues(objects).then((res) => {
+      objects = res;
     });
   }
 

@@ -14,26 +14,28 @@ const Avatar = {
 };
 
 const generate = async (qty, type) => {
-  await type.model.collection.drop().then(async () => {
-    await fakerMaker(qty, type).then(async (res, err) => {
-      try {
-        // Making sure to use .create instead of .insertMany
-        // they're similar, but create uses the 'save' middleware,
-        // meaning we can use this to both create the document, and insert our records
-        await type.model.create(res, function (err, res) {
-          // if (res) console.log(res);
+  await fakerMaker(qty, type)
+    .then(async (res, err) => {
+      await type.model.collection.drop().then(async () => {
+        try {
+          // Making sure to use .create instead of .insertMany
+          // they're similar, but create uses the 'save' middleware,
+          // meaning we can use this to both create the document, and insert our records
+          await type.model.create(res, function (err, res) {
+            // if (res) console.log(res);
 
-          if (err) console.error(`\n${err}`);
-        });
-      } catch (e) {
-        console.error(`\n${e}`);
-      }
-    });
-  });
+            if (err) console.error(`\n${err}`);
+          });
+        } catch (e) {
+          console.error(`\n${e}`);
+        }
+      });
+    })
+    .catch((e) => console.error(e));
 };
 
 const generator = async () => {
-  await generate(10, Avatar);
+  //await generate(10, Avatar);
   await generate(100, User);
 
   // print in green

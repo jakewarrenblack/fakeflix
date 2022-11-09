@@ -66,23 +66,29 @@ const userSchema = Schema(
     },
     maturity_setting: {
       type: String,
-      enum: ["all", "semi-restricted", "restricted"],
+      enum: ["unrestricted", "semi-restricted", "restricted"],
       required: [
         true,
         "Maturity setting is required. All, semi-restricted, or restricted.",
       ],
-      default: "all",
+      default: "unrestricted",
     },
     autoplay_enabled: {
       type: Boolean,
       default: true,
     },
+    subscription: {
+      type: String,
+      enum: ["Movies", "Shows", "Movies & Shows"],
+      required: [
+        true,
+        "Subscription is required. Shows, Movies, or Movies & Shows.",
+      ],
+    },
     // Refer to an array of Listings (Favourite programmes/films)
     my_list: {
       type: [Schema.Types.ObjectId],
       ref: "Title",
-      faker: "favourites",
-      required: true,
     },
     // 'child' or 'user' types will have an account admin
     admin: {
@@ -101,14 +107,6 @@ const userSchema = Schema(
       // (this isn't the password), but to stop e.g. users on a family account accessing each others
       type: Number,
       faker: "datatype.number",
-    },
-    subscription: {
-      type: String,
-      enum: ["Movies", "Shows", "Movies & Shows"],
-      required: [
-        true,
-        "Subscription is required. Shows, Movies, or Movies & Shows.",
-      ],
     },
   },
   { timestamps: true }

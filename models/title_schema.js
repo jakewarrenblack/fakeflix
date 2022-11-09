@@ -1,5 +1,6 @@
-const { Schema, model } = require("mongoose");
+const { mongoose, Schema, model } = require("mongoose");
 // title can be either a series or a film
+//mongoose.set("debug", true);
 
 const titleSchema = Schema(
   {
@@ -31,7 +32,19 @@ const titleSchema = Schema(
     age_certification: {
       // could be M, U, etc
       type: String,
-      enum: ["U", "M", "R", "TV-MA"],
+      enum: [
+        "TV-MA",
+        "R",
+        "PG",
+        "TV-14",
+        "PG-13",
+        "TV-PG",
+        "TV-Y",
+        "TV-G",
+        "TV-Y7",
+        "G",
+        "NC-17",
+      ],
       required: [true, "Age rating field is required"],
     },
     runtime: {
