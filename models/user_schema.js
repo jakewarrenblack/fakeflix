@@ -105,7 +105,10 @@ const userSchema = Schema(
     subscription: {
       type: String,
       enum: ["Movies", "Shows", "Movies & Shows"],
-      required: [true, "Plan is required. Shows, Movies, or Movis & Shows."],
+      required: [
+        true,
+        "Subscription is required. Shows, Movies, or Movies & Shows.",
+      ],
     },
   },
   { timestamps: true }

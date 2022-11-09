@@ -1,14 +1,10 @@
 const Title = require("../models/title_schema");
 
-// TODO: Control which responses a user receives based on their plan type,
-// endpoint for e.g. batman?quality=best,
-// but only premium user can see this quality
-
 // TODO: Also, control responses based on age rating + restrictions/child account type
 
 // TODO: Endpoint with additional info from TVMaze API
 
-TODO: // (In combination with above new episode endpoint)
+// TODO: (In combination with above new episode endpoint)
 // get episodes by season
 // get episode by title
 // get all episodes (by programme id)
@@ -18,7 +14,16 @@ TODO: // (In combination with above new episode endpoint)
 // TODO: Maybe dynamic .find method, pass in some param like category
 
 const viewAll = (req, res) => {
-  Title.find()
+  // Match where type contains 'MOVIE' or 'SHOW'
+  let rgx = RegExp(/(^SHOW|MOVIE$){0,1}/);
+  let s = req.user.subscription.toUpperCase();
+  let val = (s == "SHOWS" && "SHOW") || (s == "MOVIES" && "MOVIE") || rgx;
+
+  Title.find({
+    type: {
+      $regex: val,
+    },
+  })
     .then((data) => {
       console.log(data);
       if (data.length > 0) {

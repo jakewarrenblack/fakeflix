@@ -48,6 +48,8 @@ const login = (req, res) => {
             email: user.email,
             name: user.name,
             _id: user._id,
+            // Including this so I can filter Title responses
+            subscription: user.subscription,
           },
           process.env.APP_KEY
         );

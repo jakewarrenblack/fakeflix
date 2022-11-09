@@ -4,6 +4,7 @@ const app = express();
 const port = 3000;
 require("dotenv").config();
 const key = process.env.APP_KEY;
+const { loginRequired } = require("./controllers/auth_controller");
 
 require("./utils/db.js")();
 
@@ -30,7 +31,8 @@ app.use("/api/users", require("./routes/users"));
 app.use("/api/festivals", require("./routes/festivals"));
 app.use("/api/avatars", require("./routes/avatars"));
 
-app.use("/api/titles", require("./routes/titles"));
+// Putting loginRequired here, because *every* Title route is protected
+app.use("/api/titles", loginRequired, require("./routes/titles"));
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
