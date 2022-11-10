@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "Launch Program",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}\\server.js"
+      "program": "C:\\College\\Y4\\advanced_js\\ca1-backend-jakewarrenblack\\server.js"
     }
   ]
 }
