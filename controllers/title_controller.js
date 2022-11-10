@@ -1,4 +1,5 @@
 const Title = require("../models/title_schema");
+const { getFilter } = require("../utils/age_ratings");
 
 // TODO: Also, control responses based on age rating + restrictions/child account type
 
@@ -14,16 +15,9 @@ const Title = require("../models/title_schema");
 // TODO: Maybe dynamic .find method, pass in some param like category
 
 const viewAll = (req, res) => {
-  // Match where type contains 'MOVIE' or 'SHOW'
-  let rgx = RegExp(/(^SHOW|MOVIE$){0,1}/);
-  let s = req.user.subscription.toUpperCase();
-  let val = (s == "SHOWS" && "SHOW") || (s == "MOVIES" && "MOVIE") || rgx;
+  const filter = getFilter(req.user);
 
-  Title.find({
-    type: {
-      $regex: val,
-    },
-  })
+  Title.find(filter)
     .then((data) => {
       console.log(data);
       if (data.length > 0) {

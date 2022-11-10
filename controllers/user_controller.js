@@ -50,6 +50,8 @@ const login = (req, res) => {
             _id: user._id,
             // Including this so I can filter Title responses
             subscription: user.subscription,
+            maturity_setting: user.maturity_setting,
+            type: user.type,
           },
           process.env.APP_KEY
         );

@@ -16,18 +16,15 @@ const Avatar = {
 const generate = async (qty, type) => {
   await fakerMaker(qty, type)
     .then(async (res, err) => {
-      await type.model.collection.drop().then(async () => {
-        try {
-          // Making sure to use .create instead of .insertMany
-          // they're similar, but create uses the 'save' middleware,
-          // meaning we can use this to both create the document, and insert our records
-          await type.model.create(res, function (err, res) {
-            // if (res) console.log(res);
-
-            if (err) console.error(`\n${err}`);
-          });
-        } catch (e) {
-          console.error(`\n${e}`);
+      //.create instead of .insertMany. create uses the 'save' middleware, so we can use this to both create the document, and insert our records
+      await type.model.create(res, (err, res) => {
+        if (err) {
+          console.error("Error: ", err);
+          return err;
+        }
+        if (res) {
+          console.log("Success: ", res);
+          return res;
         }
       });
     })
@@ -35,12 +32,10 @@ const generate = async (qty, type) => {
 };
 
 const generator = async () => {
-  //await generate(10, Avatar);
-  await generate(100, User);
-
-  // print in green
-  console.log("\x1b[32m", "\nSeeding complete!");
-  //process.exit(1);
+  await generate(10, Avatar).then(async (res) => {
+    await generate(100, User);
+  });
+  console.log("\x1b[32m", "\nSeeding complete!"); // print in green
 };
 
 generator();
