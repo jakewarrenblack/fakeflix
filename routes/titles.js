@@ -16,12 +16,12 @@ const {
 // we'll filter individually. they can access these paths, but the resources returned will be limited based on their subscription, user type, and maturity settings
 // The user may include a type,
 router.get("/all", loginRequired, viewAll);
-router.get("/title/:title", loginRequired, getByName);
+router.get("/title/:title", [loginRequired, checkSubscriptionType], getByName);
 
 // for this one, a user subscribed only to 'movies' cannot access shows, and vice-versa
 router.get("/type/:type", [loginRequired, checkSubscriptionType], getAllByType);
 
-router.get("/id/:id", loginRequired, getById);
+router.get("/id/:id", [loginRequired, checkSubscriptionType], getById);
 
 router.get("/top_scores", sortByImdbScore);
 

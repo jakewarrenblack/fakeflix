@@ -55,10 +55,18 @@ const getFavourites = async (qty = 1, object) => {
 const assignValues = async (objects) => {
     let others = []
     // Find all the admins in our generated users
-    let admins = await objects.filter((object) => {
+    let admins = await objects.filter(async (object) => {
         if (object.type === "admin") {
             // this value is being faked, but I don't need it in this case. an admin doesn't need an admin ID.
-            delete object.admin;
+            delete object.admin
+            delete object.my_list;
+            const favRand = Math.floor(Math.random() * 12) + 1;
+
+            await getFavourites(favRand, object).then((res) => {
+                // Remove any faked favourites first
+                object.my_list = res
+            })
+
             return {
                 // Generate an ID for this user:
                 // Remember this is done intentionally, so we can refer to this ID *before* it gets saved to the DB
@@ -81,6 +89,7 @@ const assignValues = async (objects) => {
 
         // Select the current user
         let object = others[i];
+        delete object.my_list
 
         // A child or user should inherit their plan type from their corresponding admin.
         // No need to check user's type here,
@@ -97,7 +106,13 @@ const assignValues = async (objects) => {
 
         // Using our random number from 1-12 to generate random favourites, pulling out Title IDs
         // These favourites will also conform to this user's subscription type, maturity settings, and account type
-        object.my_list = await getFavourites(favRand, object).then((res) => res);
+//        object.my_list = await getFavourites(favRand, object).then((res) => res);
+
+        await getFavourites(favRand, object).then((res) => {
+            // Remove any faked favourites first
+
+            object.my_list = res
+        })
 
 
         updated_users.push(object);

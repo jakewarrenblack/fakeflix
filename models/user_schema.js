@@ -83,8 +83,8 @@ const userSchema = Schema(
             required: [
                 // A 'user' or 'child' should inherit their subscription from their admin
                 // Only the admin themselves must choose a subscription type
-                validateAdmin,
-                "Subscription is required. Shows, Movies, or Movies & Shows.",
+                validateNotAdmin,
+                "Subscription is required for admins. Shows, Movies, or Movies & Shows.",
             ],
         },
         // Refer to an array of Listings (Favourite programmes/films)
@@ -116,6 +116,10 @@ const userSchema = Schema(
 
 function validateAdmin() {
     return this.type !== "admin";
+}
+
+function validateNotAdmin() {
+    return this.type === 'admin'
 }
 
 // note 'comparePassword' here is arbitrary, can be whatever name you want

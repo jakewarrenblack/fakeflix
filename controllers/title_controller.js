@@ -1,16 +1,17 @@
 const Title = require("../models/title_schema");
-const verifyAuthorisation = require('../utils/verify_auth')
+const compareFields = require('../utils/verify_auth')
 
+// TODO: Apply verify_auth to all of these routes? More or less all
 // TODO: Endpoint with additional info from TVMaze API
-
 // TODO: (In combination with above new episode endpoint)
-// get episodes by season
-// get episode by title
-// get all episodes (by programme id)
+// - get episodes by season
+// - get episode by title
+// - get all episodes (by programme id)
+
 
 // TODO: Pagination, provide param for number of results, 10, 20, 40, etc
-
 // TODO: Maybe dynamic .find method, pass in some param like category
+// ^^ Making this modular to apply to all methods preferable
 
 const viewAll = (req, res) => {
     // A filter is generated based on the user's type, subscription type, and maturity settings
@@ -38,6 +39,7 @@ const viewAll = (req, res) => {
 const getByName = async (req, res) => {
     const title = req.params.title
     const filter = req.filter
+    let failingFields = []
     /*
      I've applied a search index to the 'title' field of the Title model, which makes it easy to categorise the Title data in an easily searchable format.
      With this search index added, we can use the aggregate method to run a search on the Titles with any number of 'pipeline steps' applied to it.
@@ -45,6 +47,23 @@ const getByName = async (req, res) => {
      Here, I'm just applying a $search, and a $match. with this pipeline, we can perform a fuzzy search, misspell a word slightly, omit some words from a title, etc.
      The result will be filtered based on our filter object as usual.
     */
+
+    // we'll have an unfiltered (unfiltered for maturity settings) response object passed from the middleware
+
+    // now I'm filtering again, but checking whether the maturity settings match (we already know the user's subscription type allows them to view this resource
+
+    if (req.unfilteredResponse) {
+        failingFields = compareFields(req.unfilteredResponse, filter, false)
+
+        if (failingFields?.length) {
+            res.status(404).json({
+                message: `Results were found for '${title}', but your it doesn't match up with your maturity settings. The following settings are applied:`,
+                // Filtering out 'falsey' values, which I've just applied to the unrestricted category to include unrated titles
+                "Maturity types": filter.age_certification.$in.filter(rating => rating),
+            });
+        }
+    }
+
 
     Title.aggregate([
         {
@@ -72,6 +91,7 @@ const getByName = async (req, res) => {
         }
     ]).limit(5)
         .then((data) => {
+
             if (data.length) {
                 res.status(200).json(data);
             } else {
@@ -86,6 +106,8 @@ const getByName = async (req, res) => {
                     }
                 });
             }
+
+
         })
         .catch((err) => {
             console.error(err);
@@ -103,49 +125,43 @@ const getByName = async (req, res) => {
 const getById = async (req, res) => {
     let id = req.params.id;
     const filter = req.filter
-    let failing_fields = []
-    let initialRes;
+    // If the user got past the middleware, we know they're authorised to access whatever it is they're requesting,
+    // now their filters will determine whether it's returned or not
 
-    await Title.findOne({
-        _id: id,
-    }).then((res) => {
-        initialRes = res
-        failing_fields = verifyAuthorisation(res, filter)
-    })
+    let failingFields = []
 
-    if (!failing_fields?.length) {
-        Title.findOne({
-            _id: id,
-            ...filter
-        })
-            .then((data) => {
-                if (data) {
-                    res.status(200).json(data);
-                } else {
-                    res.status(404).json({
-                        message: `Title with id: ${id} not found`,
-                    });
-                }
-            })
-            .catch((err) => {
-                console.error(err);
-                if (err.name === "CastError") {
-                    res.status(400).json({
-                        message: `Bad request, "${id}" is not a valid id`,
-                    });
-                } else {
-                    res.status(500).json(err);
-                }
-            });
-    } else {
+    if (req.unfilteredResponse) {
+        if (!req.unfilteredResponse?._id) req.unfilteredResponse = req.unfilteredResponse._doc
 
-        res.status(401).json({
-            message: `Sorry, you're not authorised to access that resource.`,
-            "Review the following account attributes": failing_fields
+        // we'll have an unfiltered response object passed from the middleware
+        failingFields = compareFields(req.unfilteredResponse, filter, false)
+    }
+
+    if (failingFields?.length) {
+        res.status(404).json({
+            message: `Results were found for '${id}', but your it doesn't match up with your maturity settings. The following settings are applied:`,
+            // Filtering out 'falsey' values, which I've just applied to the unrestricted category to include unrated titles
+            "Maturity types": filter.age_certification.$in.filter(rating => rating),
         });
     }
+
+
+    Title.findOne({_id: id})
+        .then((data) => {
+            if (data) {
+                res.status(200).json(data);
+            } else {
+                res.status(404).json({
+                    message: `Title with id: ${id} not found`,
+                });
+            }
+        })
+
+
 };
 
+// Because of our checkSubscriptionType middleware, we know that if a user gets to this point,
+// they're authorised to view /titles/shows, or /titles/movies
 const getAllByType = (req, res) => {
     let type = req.params.type.toUpperCase()
     // if it's plural, make it singular to conform with Title's 'SHOW' or 'MOVIE' types
