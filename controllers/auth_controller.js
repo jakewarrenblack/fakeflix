@@ -12,7 +12,6 @@ const aggregateTitle = async (searchPipeline, request_value, req, res) => {
     let authorised_results, failing_fields;
     return await Title.aggregate([
         searchPipeline(request_value)
-        // Just check the first result, most likely to be what they were trying to access
     ]).limit(parseInt(req?.query?.limit ?? 5))
         .then(async (data) => {
             if (data.length) {

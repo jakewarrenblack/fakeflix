@@ -184,32 +184,6 @@ const getAllByType = (req, res) => {
         });
 };
 
-const sortByImdbScore = (req, res) => {
-    let limit = req.params.limit;
-
-    Title.find({imdb_score: {$ne: null}})
-        // .sort({ imdb_score: -1 })
-        .limit(limit ?? 20)
-        .then((data) => {
-            if (data) {
-                res.status(200).json(data);
-            } else {
-                res.status(404).json({
-                    message: `No titles of type 'MOVIE' found`,
-                });
-            }
-        })
-        .catch((err) => {
-            console.error(err);
-            if (err.name === "CastError") {
-                res.status(400).json({
-                    message: `Bad request`,
-                });
-            } else {
-                res.status(500).json(err);
-            }
-        });
-};
 
 // TODO: createTitle()
 const createTitle = () => {
@@ -217,7 +191,7 @@ const createTitle = () => {
 }
 
 // TODO: updateTitleByID()
-const updateTitleById = () => {
+const updateTitle = () => {
     throw new Error('Not yet implemented')
 }
 
@@ -227,20 +201,19 @@ const deleteTitle = () => {
 }
 
 // make a call to TVMaze to get some more info about this programme
-const getAdditionalShowInfo = async (imdb_id) => {
+const getAdditionalShowInfo = async (response) => {
     // regardless of what way we searched initially, we'll use the imdb id (if exists) from the response
 
-    let url = `https://api.tvmaze.com/lookup/shows?imdb=${imdb_id}`
-
-    await axios.get(url).then((res) => {
-        return res;
-    })
+    if (response.imdb_id)
+        return await axios.get(`https://api.tvmaze.com/lookup/shows?imdb=${response.imdb_id}`).then((res) => {
+            return res.data;
+        }).catch((e) => console.log(e))
 }
 
 const getShow = async (req, res) => {
     let request_value = req?.params?.show
     let filter = req.filter
-    // Will respond if failing fields present
+    // Will respond if failing fields present. Checking the unfiltered response received from auth_controller
     checkFailingFields(req, req.filter, request_value, res)
     let search_type;
     let imdb_id = request_value && validate_imdb_id(request_value)
@@ -250,15 +223,22 @@ const getShow = async (req, res) => {
 
     let pipeline = (searchPipeline(request_value, filter))
 
-    let additionalInfo = req?.params?.moreDetail
+    let additionalInfo = req?.query?.moreDetail
 
 
     if (search_type === 'title') {
         await Title.aggregate([pipeline]).limit(5)
             //.allowDiskUse(true)
-            .then((data) => {
+            .then(async (data) => {
 
                 if (data.length) {
+
+                    if (additionalInfo) {
+                        for (let i = 0; i < data.length; i++) {
+                            data[i].additional_info = await getAdditionalShowInfo(data[i]).then((res) => res)
+                        }
+
+                    }
 
 
                     res.status(200).json(data);
@@ -289,11 +269,19 @@ const getShow = async (req, res) => {
         await Title.find({
             imdb_id: request_value,
             type: 'SHOW',
-        }).limit(req.query.limit ?? 5).then((aggregateResponse) => {
+        }).limit(req.query.limit ?? 5).then(async (aggregateResponse) => {
             let response = aggregateResponse;
 
             if (response) {
+
+                if (additionalInfo) {
+                    for (let i = 0; i < response.length; i++) {
+                        response[i]._doc.additional_info = await getAdditionalShowInfo(response[i]).then((res) => res)
+                    }
+                }
+
                 res.status(200).json(response);
+
             } else {
                 res.status(404).json({
                     message: `No titles found`,
