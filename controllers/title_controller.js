@@ -1,9 +1,38 @@
 const Title = require("../models/title_schema");
-const compareFields = require('../utils/verify_auth')
+const {compareFields} = require('../utils/verify_auth')
+const validate_imdb_id = require("../utils/imdb_validate");
+const searchPipeline = require('../utils/search_pipeline')
+const axios = require('axios')
 
-// TODO: Apply verify_auth to all of these routes? More or less all
-// TODO: Endpoint with additional info from TVMaze API
-// TODO: (In combination with above new episode endpoint)
+const checkFailingFields = (req, filter, query, res) => {
+
+
+    // Even if it's an array and there are multiple objects with failing fields, return the first one, they'll all be failing based on the user's subscription type anyway
+
+    if (req.unfilteredResponse) {
+        if (typeof req.unfilteredResponse === 'object') {
+            req.unfilteredResponse = req.unfilteredResponse[0]
+        } else {
+            if (!req.unfilteredResponse?._id)
+                req.unfilteredResponse = req.unfilteredResponse._doc
+        }
+    }
+
+
+    // we'll have an unfiltered response object passed from the middleware
+    let failingFields = compareFields(req.unfilteredResponse, filter, false)
+
+
+    if (failingFields?.length) {
+        res.status(404).json({
+            message: `Results were found for '${query}', but your it doesn't match up with your maturity settings. The following settings are applied:`,
+            // Filtering out 'falsey' values, which I've just applied to the unrestricted category to include unrated titles
+            "Maturity types": filter.age_certification.$in.filter(rating => rating),
+        });
+    }
+}
+
+// TODO: Endpoint with additional info from TVMaze API:
 // - get episodes by season
 // - get episode by title
 // - get all episodes (by programme id)
@@ -11,8 +40,10 @@ const compareFields = require('../utils/verify_auth')
 
 // TODO: Pagination, provide param for number of results, 10, 20, 40, etc
 // TODO: Maybe dynamic .find method, pass in some param like category
+// TODO: Add sort by imdb score, etc
 // ^^ Making this modular to apply to all methods preferable
 
+// TODO: Add limit, sortBy, sorting direction (asc/desc), which page you want to view
 const viewAll = (req, res) => {
     // A filter is generated based on the user's type, subscription type, and maturity settings
     // 'child' type user defaults to listings suitable for children
@@ -41,17 +72,13 @@ const getByName = async (req, res) => {
     const filter = req.filter
     let failingFields = []
     /*
-     I've applied a search index to the 'title' field of the Title model, which makes it easy to categorise the Title data in an easily searchable format.
+     I've applied a search index to the 'title' field of the Title model, which makes it possible to categorise the Title data in an easily searchable format.
      With this search index added, we can use the aggregate method to run a search on the Titles with any number of 'pipeline steps' applied to it.
-
-     Here, I'm just applying a $search, and a $match. with this pipeline, we can perform a fuzzy search, misspell a word slightly, omit some words from a title, etc.
-     The result will be filtered based on our filter object as usual.
-    */
+     */
 
     // we'll have an unfiltered (unfiltered for maturity settings) response object passed from the middleware
 
     // now I'm filtering again, but checking whether the maturity settings match (we already know the user's subscription type allows them to view this resource
-
     if (req.unfilteredResponse) {
         failingFields = compareFields(req.unfilteredResponse, filter, false)
 
@@ -65,30 +92,9 @@ const getByName = async (req, res) => {
     }
 
 
+    // If all is well, our filters allow for accessing this resource
     Title.aggregate([
-        {
-            '$search': {
-                'index': 'default',
-                'text': {
-                    'query': title,
-                    'path': {
-                        'wildcard': '*'
-                    },
-                    'fuzzy': {
-                        // number of characters that can be changed to match the term
-                        'maxEdits': 1,
-                        // max number of variations on the search term to generate and search for
-                        'maxExpansions': 100
-                    }
-                }
-            },
-        },
-        {
-            '$match': {
-                // We have to spread the filter object to apply its individual attributes to the match
-                ...filter
-            }
-        }
+        searchPipeline(title, filter)
     ]).limit(5)
         .then((data) => {
 
@@ -128,22 +134,8 @@ const getById = async (req, res) => {
     // If the user got past the middleware, we know they're authorised to access whatever it is they're requesting,
     // now their filters will determine whether it's returned or not
 
-    let failingFields = []
-
-    if (req.unfilteredResponse) {
-        if (!req.unfilteredResponse?._id) req.unfilteredResponse = req.unfilteredResponse._doc
-
-        // we'll have an unfiltered response object passed from the middleware
-        failingFields = compareFields(req.unfilteredResponse, filter, false)
-    }
-
-    if (failingFields?.length) {
-        res.status(404).json({
-            message: `Results were found for '${id}', but your it doesn't match up with your maturity settings. The following settings are applied:`,
-            // Filtering out 'falsey' values, which I've just applied to the unrestricted category to include unrated titles
-            "Maturity types": filter.age_certification.$in.filter(rating => rating),
-        });
-    }
+    // checkFailingField will return if there are failing fields, no need to .then, .catch
+    checkFailingFields(req, filter, id, res)
 
 
     Title.findOne({_id: id})
@@ -219,10 +211,115 @@ const sortByImdbScore = (req, res) => {
         });
 };
 
+// TODO: createTitle()
+const createTitle = () => {
+    throw new Error('Not yet implemented')
+}
+
+// TODO: updateTitleByID()
+const updateTitleById = () => {
+    throw new Error('Not yet implemented')
+}
+
+// TODO: deleteTitleById()
+const deleteTitle = () => {
+    throw new Error('Not yet implemented')
+}
+
+// make a call to TVMaze to get some more info about this programme
+const getAdditionalShowInfo = async (imdb_id) => {
+    // regardless of what way we searched initially, we'll use the imdb id (if exists) from the response
+
+    let url = `https://api.tvmaze.com/lookup/shows?imdb=${imdb_id}`
+
+    await axios.get(url).then((res) => {
+        return res;
+    })
+}
+
+const getShow = async (req, res) => {
+    let request_value = req?.params?.show
+    let filter = req.filter
+    // Will respond if failing fields present
+    checkFailingFields(req, req.filter, request_value, res)
+    let search_type;
+    let imdb_id = request_value && validate_imdb_id(request_value)
+
+    // If we received a valid imdb id, search using that, otherwise try searching by title
+    search_type = imdb_id ? 'imdb_id' : 'title';
+
+    let pipeline = (searchPipeline(request_value, filter))
+
+    let additionalInfo = req?.params?.moreDetail
+
+
+    if (search_type === 'title') {
+        await Title.aggregate([pipeline]).limit(5)
+            //.allowDiskUse(true)
+            .then((data) => {
+
+                if (data.length) {
+
+
+                    res.status(200).json(data);
+                } else {
+                    res.status(404).json({
+                        message: `No valid results found for '${request_value}'.Note the following attributes apply to your account:`,
+                        Attributes: {
+                            "Maturity types": filter.age_certification.$in.filter(rating => rating),
+                            "Subscription type": filter.type.$regex
+                        }
+                    });
+                }
+
+
+            })
+            .catch((err) => {
+                console.error(err);
+                if (err.name === "CastError") {
+                    res.status(400).json({
+                        message: `Bad request, "${name}" is not a valid name`,
+                    });
+                } else {
+                    res.status(500).json(err);
+                }
+            });
+
+    } else {
+        await Title.find({
+            imdb_id: request_value,
+            type: 'SHOW',
+        }).limit(req.query.limit ?? 5).then((aggregateResponse) => {
+            let response = aggregateResponse;
+
+            if (response) {
+                res.status(200).json(response);
+            } else {
+                res.status(404).json({
+                    message: `No titles found`,
+                });
+            }
+
+        }).catch((err) => {
+            console.error(err);
+            if (err.name === "CastError") {
+                res.status(400).json({
+                    message: `Bad request.`,
+                });
+            } else {
+                res.status(500).json(err);
+            }
+        });
+    }
+
+
+}
+
 module.exports = {
     viewAll,
     getByName,
     getById,
     getAllByType,
-    sortByImdbScore,
+
+    getShow,
 };

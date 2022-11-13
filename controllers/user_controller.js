@@ -54,8 +54,8 @@ const login = (req, res) => {
                         type: user.type,
                         // APP_KEY environment variable is our secret/private key
                     }, process.env.APP_KEY, {
-                        // The token should expire in two hours
-                        expiresIn: "2h"
+                        // The token should expire in two days
+                        expiresIn: "2 days"
                     }
                 );
 
@@ -140,14 +140,17 @@ const deleteProfile = (req, res) => {
         });
 };
 
-// TODO: Maybe if a user is logged in,
-// doing this without an ID will show them their own profile?
 const viewProfile = (req, res) => {
     const id = () => mongoose.mongo.ObjectId(req.user._id);
+    // Pass in fields to populate, e.g. ?populate=avatar&populate=my_list
+    // Which will replace the IDs in these fields with their corresponding objects
+    const populate = req.query.populate;
 
     // connect to db and retrieve festival with :id
     User.findById(id())
+        .populate(populate)
         .then((data) => {
+
             if (data) {
                 res.status(200).json(data);
             } else {
@@ -171,10 +174,15 @@ const viewProfile = (req, res) => {
 // View all profiles related to one-another
 // Will return the admin and their sub-users
 const manageProfiles = async (req, res) => {
-    const id = () => mongoose.mongo.ObjectId(req.user._id);
+    const id = mongoose.mongo.ObjectId(req.user._id);
+    const populate = req.query.populate
+
     await User.find({
-        $or: [{_id: id()}, {admin: id()}],
+        $or: [{_id: id}, {admin: id}],
     })
+        .populate(populate)
+        // Admin should appear first in the list
+        .sort({type: 1})
         .then((data) => {
             console.log(data);
             if (data.length > 0) {
@@ -217,12 +225,12 @@ const viewMyList = (req, res) => {
 const viewAvatars = (req, res) => {
     //  .find() expects this to be a function,
     // generate a valid mongo user ID from the user ID string
-    const id = () => mongoose.mongo.ObjectId(req.user._id);
+    const id = mongoose.mongo.ObjectId(req.user._id);
     // Again here only returning the username
     // So we could have a page with usernames and avatars
     User.find(
         {
-            $or: [{_id: id()}, {admin: id()}],
+            $or: [{_id: id}, {admin: id}],
         },
         "username"
     )

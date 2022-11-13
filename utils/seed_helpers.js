@@ -1,5 +1,6 @@
 const Avatar = require("../models/avatar_schema").model;
 const Title = require("../models/title_schema");
+;
 const {getFilter} = require("../utils/age_ratings");
 const mongoose = require("mongoose");
 
