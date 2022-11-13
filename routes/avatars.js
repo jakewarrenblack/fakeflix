@@ -5,11 +5,12 @@ const {createData, viewAll, updateAvatar, deleteAvatar} = require("../controller
 // Object with methods inside it
 const imageUpload = require('../utils/image_upload')
 
-// Can't view avatars without logging in
+// LoginRequired on all of these paths, applied at the route level rather than individual paths
 router
-    .get("/all", loginRequired, viewAll)
-    .post("/", [imageUpload.single("file"), loginRequired], createData)
-    .put("/:id", loginRequired, updateAvatar)
+    .get("/all", viewAll)
+    .post("/", imageUpload.single("file"), createData)
+    // A user might optionally pass an image to upload when editing
+    .put("/:id", imageUpload.single("file"), updateAvatar)
     .delete("/:id", loginRequired, deleteAvatar);
 
 module.exports = router;

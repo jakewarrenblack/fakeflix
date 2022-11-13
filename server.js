@@ -5,16 +5,12 @@ const port = 3000;
 require("dotenv").config();
 const key = process.env.APP_KEY;
 const {loginRequired} = require("./controllers/auth_controller");
-
 require("./utils/db.js")();
-
 app.use(express.json());
-
 app.use(express.static("public"));
 
 app.use((req, res, next) => {
     let header = req.headers?.authorization?.split(" ");
-
     if (header && header[0] === "Bearer")
         jwt.verify(header[1], key, (err, decoded) => !err && (req.user = decoded));
 
@@ -22,16 +18,14 @@ app.use((req, res, next) => {
 });
 
 app.use((req, res, next) => {
-    console.log(req.user);
+    console.log(req?.user);
     // it'd hang if we didn't tell it next() or give some response (which would end it)
     next();
 });
 
 app.use("/api/users", require("./routes/users"));
-app.use("/api/festivals", require("./routes/festivals"));
-app.use("/api/avatars", require("./routes/avatars"));
-
-// Putting loginRequired here, because *every* Title route is protected
+// Putting loginRequired here, because *every* Avatar route is protected
+app.use("/api/avatars", loginRequired, require("./routes/avatars"));
 app.use("/api/titles", require("./routes/titles"));
 
 app.listen(port, () => {
