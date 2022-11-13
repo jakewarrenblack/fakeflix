@@ -1,5 +1,6 @@
 const Avatar = require("../models/avatar_schema").model;
 const faker = require('@withshepherd/faker')
+const {model: User} = require("../models/user_schema");
 
 
 const viewAll = (req, res) => {
@@ -18,19 +19,21 @@ const viewAll = (req, res) => {
         });
 };
 
+const hasImage = (file) => {
+    if (file) {
 
-const createData = (req, res) => {
-    let avatarData = req.body;
-
-    if (req.file) {
-        avatarData.img = req.file.filename;
-
-        avatarData = {
-            img: req.file.filename,
+        let avatarData = {
+            img: file.filename,
             name: faker.word.interjection()
         }
 
+        return avatarData
     }
+}
+
+const createData = (req, res) => {
+    let avatarData = hasImage(req.file) ?? req.body
+
     Avatar.create(avatarData)
         .then((data) => {
             console.log("New Avatar Created!", data);
@@ -50,7 +53,72 @@ const createData = (req, res) => {
         });
 };
 
+
+const updateAvatar = (req, res) => {
+    let id = req.params.id
+    let avatarData = hasImage(req.file) ?? req.body
+
+    Avatar.findByIdAndUpdate(id, avatarData, {
+        new: true,
+    })
+        .then((data) => {
+            if (data) {
+                res.status(201).json(data);
+            } else {
+                res.status(404).json({
+                    message: `Avatar with id: ${id} not found`,
+                });
+            }
+        })
+        .catch((err) => {
+            if (err.name === "ValidationError") {
+                console.error("Validation Error!!", err);
+                res.status(422).json({
+                    msg: "Validation Error",
+                    error: err.message,
+                });
+            } else if (err.name === "CastError") {
+                res.status(400).json({
+                    message: `Bad request, ${id} is not a valid id`,
+                });
+            } else {
+                console.error(err);
+                res.status(500).json(err);
+            }
+        });
+}
+
+const deleteAvatar = (req, res) => {
+    let id = req.params.id
+
+    Avatar.deleteOne({_id: id})
+        .then((data) => {
+            if (data.acknowledged) {
+                res.status(200).json({
+                    message: `Avatar with id: ${id} deleted successfully`,
+                });
+            } else {
+                res.status(404).json({
+                    message: `Avatar with id: ${id} not found`,
+                });
+            }
+        })
+        .catch((err) => {
+            console.error(err);
+            if (err.name === "CastError") {
+                res.status(400).json({
+                    message: `Bad request, ${id} is not a valid id`,
+                });
+            } else {
+                res.status(500).json(err);
+            }
+        });
+
+}
+
 module.exports = {
     viewAll,
     createData,
+    updateAvatar,
+    deleteAvatar
 };

@@ -34,12 +34,9 @@ const checkFailingFields = (req, filter, query, res) => {
 }
 
 
-// TODO: Pagination, provide param for number of results, 10, 20, 40, etc
+// TODO: Pagination, provide param for number of results, 10, 20, 40, etc, sort by asc/desc, e.g. imdb score
 // TODO: Maybe dynamic .find method, pass in some param like category
-// TODO: Add sort by imdb score, etc
-// ^^ Making this modular to apply to all methods preferable
 
-// TODO: Add limit, sortBy, sorting direction (asc/desc), which page you want to view
 const viewAll = (req, res) => {
     // A filter is generated based on the user's type, subscription type, and maturity settings
     // 'child' type user defaults to listings suitable for children

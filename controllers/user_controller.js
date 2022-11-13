@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const {default: mongoose} = require("mongoose");
 
 // TODO: Stripe integration as part of this
+// TODO: Don't allow duplicate email addresses
 const register = (req, res) => {
     let newUser = new User(req.body);
     newUser.password = bcrypt.hashSync(req.body.password, 10);
