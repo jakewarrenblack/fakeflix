@@ -72,6 +72,16 @@ const loginRequired = (req, res, next) => {
     }
 };
 
+const isDatabaseAdmin = (req, res, next) => {
+    if (req.user.database_admin) {
+        next()
+    } else {
+        res.status(401).json({
+            msg: "Unauthorised user! Only database administrators are authorised to access that resource.",
+        });
+    }
+}
+
 // We don't need to check user auth here, because all the title routes use loginRequired anyway
 const checkSubscriptionType = async (req, res, next) => {
     let request_type = req.params && Object.keys(req.params)[0]
@@ -205,5 +215,6 @@ const checkSubscriptionType = async (req, res, next) => {
 
 module.exports = {
     loginRequired,
-    checkSubscriptionType
+    checkSubscriptionType,
+    isDatabaseAdmin
 };

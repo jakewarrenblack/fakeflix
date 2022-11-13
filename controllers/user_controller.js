@@ -52,6 +52,10 @@ const login = (req, res) => {
                         subscription: user.subscription,
                         maturity_setting: user.maturity_setting,
                         type: user.type,
+                        // Just let it be undefined if not specified
+                        // To act as identifier for 'staff' members to add/update/delete Title listings
+                        // Wouldn't make sense for 'customers' to be allowed to do this
+                        database_admin: user.database_admin
                         // APP_KEY environment variable is our secret/private key
                     }, process.env.APP_KEY, {
                         // The token should expire in two days

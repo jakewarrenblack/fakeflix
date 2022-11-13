@@ -3,6 +3,7 @@ const {compareFields} = require('../utils/verify_auth')
 const validate_imdb_id = require("../utils/imdb_validate");
 const searchPipeline = require('../utils/search_pipeline')
 const axios = require('axios')
+const {model: User} = require("../models/user_schema");
 
 const checkFailingFields = (req, filter, query, res) => {
 
@@ -31,11 +32,6 @@ const checkFailingFields = (req, filter, query, res) => {
         });
     }
 }
-
-// TODO: Endpoint with additional info from TVMaze API:
-// - get episodes by season
-// - get episode by title
-// - get all episodes (by programme id)
 
 
 // TODO: Pagination, provide param for number of results, 10, 20, 40, etc
@@ -185,19 +181,84 @@ const getAllByType = (req, res) => {
 };
 
 
-// TODO: createTitle()
-const createTitle = () => {
-    throw new Error('Not yet implemented')
+const createTitle = (req, res) => {
+    let newTitle = new Title(req.body)
+
+    newTitle.save((err, user) => {
+        if (err) {
+            return res.status(400).json({
+                msg: err.message,
+            });
+        } else {
+            user.password = undefined;
+            return res.status(201).json(user);
+        }
+    });
 }
 
-// TODO: updateTitleByID()
-const updateTitle = () => {
-    throw new Error('Not yet implemented')
+
+const updateTitle = (req, res) => {
+    let id = req.params.id;
+    let body = req.body;
+
+    Title.findByIdAndUpdate(id, body, {
+        new: true,
+    })
+        .then((data) => {
+            if (data) {
+                res.status(201).json(data);
+            } else {
+                res.status(404).json({
+                    message: `Title with id: ${id} not found`,
+                });
+            }
+        })
+        .catch((err) => {
+            if (err.name === "ValidationError") {
+                console.error("Validation Error!!", err);
+                res.status(422).json({
+                    msg: "Validation Error",
+                    error: err.message,
+                });
+            } else if (err.name === "CastError") {
+                res.status(400).json({
+                    message: `Bad request, ${id} is not a valid id`,
+                });
+            } else {
+                console.error(err);
+                res.status(500).json(err);
+            }
+        });
 }
 
-// TODO: deleteTitleById()
+// deleteTitle doesn't necessarily have to remove the title reference from user's favourites list
+// on something like netflix, if a user has a favourite title which has been deleted, it just won't show up in their list
+// just as .populate won't return anything for it in our case
 const deleteTitle = () => {
-    throw new Error('Not yet implemented')
+    let id = req.params.id;
+
+    Title.deleteOne({_id: id})
+        .then((data) => {
+            if (data.deletedCount) {
+                res.status(200).json({
+                    message: `Title with id: ${id} deleted successfully`,
+                });
+            } else {
+                res.status(404).json({
+                    message: `Title with id: ${id} not found`,
+                });
+            }
+        })
+        .catch((err) => {
+            console.error(err);
+            if (err.name === "CastError") {
+                res.status(400).json({
+                    message: `Bad request, ${id} is not a valid id`,
+                });
+            } else {
+                res.status(500).json(err);
+            }
+        });
 }
 
 // make a call to TVMaze to get some more info about this programme
@@ -308,6 +369,7 @@ module.exports = {
     getByName,
     getById,
     getAllByType,
-
+    createTitle,
     getShow,
+    updateTitle
 };

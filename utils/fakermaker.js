@@ -29,15 +29,20 @@ const fakerMaker = async (qty, type) => {
                 */
                     jsf.option("alwaysFakeOptionals", true);
 
+                    // Special type for 'staff' updating/adding/removing film and show listings
+                    jsf.option('ignoreProperties', ['database_admin'])
+
                     await getAvatar().then((res) => {
                         avatar = res;
                     });
+
+                    let types = ['admin', 'user', 'child']
+
                 }
 
                 jsf.extend("faker", () => {
                     return {
                         ...faker,
-                        favourites,
                         get_image: getImage(i + 1),
                         avatar,
                         hashPassword,

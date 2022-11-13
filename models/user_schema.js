@@ -52,6 +52,13 @@ const userSchema = Schema(
             enum: ["admin", "user", "child"],
             required: [true, "Type is required"],
         },
+        database_admin: {
+            // Don't want it to fake any database_admins, reserving that for creation
+            // In reality this would make sense
+            // admins, users, and child accounts are 'customers'
+            // database_admins are 'staff'
+            type: Boolean
+        },
         avatar: {
             // refer to avatar schema type here
             type: Schema.Types.ObjectId,

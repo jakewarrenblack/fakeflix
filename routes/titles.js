@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {loginRequired, checkSubscriptionType} = require("../controllers/auth_controller")
+const {loginRequired, checkSubscriptionType, isDatabaseAdmin} = require("../controllers/auth_controller")
 
 const {
     viewAll,
@@ -8,7 +8,8 @@ const {
     getAllByType,
     getById,
     getShow,
-    getMovie
+    createTitle,
+    updateTitle
 } = require("../controllers/title_controller");
 
 // Every Title route requires login, which we've applied in server.js, rather than to the /titles route, rather than to each path individually.
@@ -25,11 +26,14 @@ router.get("/title/:title", [loginRequired, checkSubscriptionType], getByName);
 // for this one, a user subscribed only to 'movies' cannot access shows, and vice-versa
 router.get("/type/:type", [loginRequired, checkSubscriptionType], getAllByType);
 
-// TODO: implement this
 router.get("/show/:show", [loginRequired, checkSubscriptionType], getShow);
 
 router.get("/id/:id", [loginRequired, checkSubscriptionType], getById);
 
-// router.get("/top_scores", sortByImdbScore);
+// Only an admin can add titles
+router.post("/create", [loginRequired, isDatabaseAdmin], createTitle);
+
+// Only an admin can edit titles
+router.put("/update/:id", [loginRequired, isDatabaseAdmin], updateTitle);
 
 module.exports = router;
