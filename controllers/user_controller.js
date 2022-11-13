@@ -77,11 +77,61 @@ const login = (req, res) => {
 
 // TODO: Sub-user not allowed to change their admin
 // TODO: An admin removing a profile here deletes them
-const editProfile = (req, res) => {
+const editProfile = async (req, res) => {
     let id = req.params.id;
     let body = req.body;
+    let admin = req.user.type === 'admin'
 
-    User.findByIdAndUpdate(id, body, {
+    if (admin && id) {
+        // if admin is modifying another user
+
+        // admin can't change a user's admin ID, they are tied to this admin
+        // if we allowed this, we could end up with a user with an invalid admin ID
+        // only valid way to do this is to delete the user
+        if (req.body.admin || req.body.password || req.body.email || req.body?.type === 'admin') {
+            res.status(422).json({
+                message: 'Invalid operation. You can\'t change a sub-user\'s admin ID, email, or password. You can\'t set another user as an admin. If you wish to remove this sub-user, please delete them instead.'
+            })
+        } else {
+            // else, process update
+            await editMethod(id, body, res)
+        }
+    } else if (admin && !id) {
+        // admin editing themselves, use the ID from the request object
+        if (req.body._id) {
+            // if the admin is changing their own ID, make sure to also update the admin IDs of all its sub-users
+            await User.updateMany({admin: req.user._id}, {admin: req.body.id}).then(async (update) => {
+                if (update.acknowledged) {
+                    await editMethod(req.user._id, body, res)
+                }
+            })
+
+        } else {
+            // Admin isn't editing their ID, all good
+            await editMethod(req.user._id, body, res)
+        }
+
+    }
+    // a sub-user editing themselves
+    else if (!admin && !id) {
+        // A sub-user should remain tied to their admin (if, in reality, this is the account paying the bill)
+        if (req.body.admin || req.body.type) {
+            res.status(422).json({
+                message: 'Invalid operation. You can\'t change your admin ID or your account type. Only your administrator may change your account type.'
+            })
+        } else {
+            // else, process update
+            await editMethod(req.user._id, body, res)
+        }
+    }
+
+
+};
+
+
+// Extracting to be reusable
+const editMethod = async (id, body, res) => {
+    await User.findByIdAndUpdate(id, body, {
         new: true,
     })
         .then((data) => {
@@ -109,15 +159,8 @@ const editProfile = (req, res) => {
                 res.status(500).json(err);
             }
         });
-};
+}
 
-// TODO: If an admin wants to delete themselves, use the id from the req
-
-// TODO: If deleting an admin, also delete accounts dependent on the admin.
-
-// TODO: Make sure a user can only delete themselves, unless admin, admin can delete their sub-users as well
-
-// Extracting for to be reusable
 const deleteMethod = async (id, res) => {
 
     await User.deleteOne({_id: id})
@@ -178,13 +221,13 @@ const deleteProfile = async (req, res) => {
 };
 
 const viewProfile = (req, res) => {
-    const id = () => mongoose.mongo.ObjectId(req.user._id);
+    const id = req.user._id
     // Pass in fields to populate, e.g. ?populate=avatar&populate=my_list
     // Which will replace the IDs in these fields with their corresponding objects
     const populate = req.query.populate;
 
     // connect to db and retrieve festival with :id
-    User.findById(id())
+    User.findById(id)
         .populate(populate)
         .then((data) => {
 
@@ -235,8 +278,7 @@ const manageProfiles = async (req, res) => {
         });
 };
 
-// favourites list
-// TODO: Separate add/remove from list methods?
+
 const viewMyList = (req, res) => {
     //  .find() expects this to be a function,
     // generate a valid mongo user ID from the user ID string
@@ -259,6 +301,7 @@ const viewMyList = (req, res) => {
             res.status(500).json(err);
         });
 };
+
 
 const viewAvatars = (req, res) => {
     //  .find() expects this to be a function,

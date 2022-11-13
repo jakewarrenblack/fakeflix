@@ -87,28 +87,30 @@ const isDatabaseAdmin = (req, res, next) => {
 
 // User of type 'admin' is an account owner
 // There are also 'child' and 'user' type Users, who have admin IDs
-// A child or user account can be deleted by their admin
+// A child or user account can be deleted/edited by their admin
 const adminRequired = async (req, res, next) => {
     let admin = req.user && req.user.type === 'admin'
-    // if no id is passed, they want to delete themselves
-    // deleting your own account is always allowed, don't need admin for that
+    // if no id is passed, they want to delete/edit themselves
+
+    // deleting/editing your own account is always allowed, don't need admin for that
     // but if an ID is passed, you're trying to delete somebody else's account,
     // in which case you need to be an admin, and that user must have your ID as their admin ID
 
     // if an admin wants to delete themselves, we should recursively delete all users they are the admin for
     let id = req.params.id
 
-    // id and admin, admin is deleting somebody else
+    // id and admin, admin is deleting/editing somebody else
     if (id && admin) {
         // first get the user they're trying to delete, find out if their admin ID matches the current user's ID
         await User.findOne({_id: id}).then((data) => {
             if (data) {
                 // if we found the user they're looking for, read their admin ID
                 if (data.admin.toString() === req.user._id.toString()) {
-                    // if this is true, they are this user's admin, proceed with the deletion
+                    // if this is true, they are this user's admin, proceed with the request
                     next()
                 } else {
                     res.status(401).json({
+                        // Returning admin ID to make debugging easier
                         message: `Unauthorised. You are not the administrator for account with id: ${id}. Admin ID is: ${data.admin}`,
                     });
                 }
@@ -120,18 +122,20 @@ const adminRequired = async (req, res, next) => {
         })
     }
 
-        // if an ID was passed, the user is trying to delete somebody other than themselves,
-    // which is not allowed for non-admins
+    // if an ID was passed, the user is trying to delete/edit somebody other than themselves, which is not allowed for non-admins
     else if (!admin && id) {
 
         res.status(401).json({
-            msg: "Unauthorised. Only admins are authorised to delete other users.",
+            msg: "Unauthorised. Only admins are authorised to edit or delete other users.",
         });
 
     }
-        // if admin and !id, or !admin and !id, proceed
-        // it's either an admin deleting themselves (in which case delete all dependent users)
-    // or a user deleting themselves, which is fine
+    /*
+    if admin and !id, or !admin and !id, proceed
+    it's either an admin deleting/editing themselves (if deleting, delete all dependent users)
+    or a user deleting/editing themselves, which is fine
+    */
+
     else {
         if (req.user)
             next()
