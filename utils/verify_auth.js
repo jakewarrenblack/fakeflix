@@ -6,7 +6,7 @@ const compareFields = (response, filter, checkSubscriptionType = false) => {
     // if !checkSubscriptionType, verify the user's subscription type
     if (checkSubscriptionType) {
         values = [
-            {"Subscription type": filter.type.$regex === response.type}
+            {"Subscription type": filter.type.$regex === response.type ?? response[0].type ?? response._doc.type}
         ]
         // otherwise, just check if the maturity settings match up with the resource
         // e.g. a user might not want to see 18+ results

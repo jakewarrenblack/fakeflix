@@ -132,7 +132,7 @@ const checkSubscriptionType = async (req, res, next) => {
                         res.status(500).json(err);
                     }
                 });
-            } else if (request_type === 'show' || request_type == 'movie') {
+            } else if (request_type === 'show') {
                 let request_value = request_type == 'show' ? req?.params?.show : req?.params?.movie
                 let search_type;
 
@@ -152,7 +152,7 @@ const checkSubscriptionType = async (req, res, next) => {
                 } else {
                     await Title.find({
                         imdb_id: request_value,
-                        type: request_type.toUpperCase(),
+                        type: 'SHOW',
                     }).limit(req.query.limit ?? 5).then(async (aggregateResponse) => {
                         response = aggregateResponse;
                         await getAuthorisedResults(response, req.filter, true)
