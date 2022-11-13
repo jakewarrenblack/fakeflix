@@ -1,4 +1,5 @@
 const Avatar = require("../models/avatar_schema").model;
+const faker = require('@withshepherd/faker')
 
 
 const viewAll = (req, res) => {
@@ -18,10 +19,18 @@ const viewAll = (req, res) => {
 };
 
 
-// TODO: Image upload here
 const createData = (req, res) => {
     let avatarData = req.body;
 
+    if (req.file) {
+        avatarData.img = req.file.filename;
+
+        avatarData = {
+            img: req.file.filename,
+            name: faker.word.interjection()
+        }
+
+    }
     Avatar.create(avatarData)
         .then((data) => {
             console.log("New Avatar Created!", data);

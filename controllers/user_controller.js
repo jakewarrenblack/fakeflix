@@ -75,8 +75,6 @@ const login = (req, res) => {
         });
 };
 
-// TODO: Sub-user not allowed to change their admin
-// TODO: An admin removing a profile here deletes them
 const editProfile = async (req, res) => {
     let id = req.params.id;
     let body = req.body;
