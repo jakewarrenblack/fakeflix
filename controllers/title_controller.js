@@ -234,7 +234,7 @@ const updateTitle = (req, res) => {
 // deleteTitle doesn't necessarily have to remove the title reference from user's favourites list
 // on something like netflix, if a user has a favourite title which has been deleted, it just won't show up in their list
 // just as .populate won't return anything for it in our case
-const deleteTitle = () => {
+const deleteTitle = (req, res) => {
     let id = req.params.id;
 
     Title.deleteOne({_id: id})
@@ -371,5 +371,6 @@ module.exports = {
     getAllByType,
     createTitle,
     getShow,
-    updateTitle
+    updateTitle,
+    deleteTitle
 };

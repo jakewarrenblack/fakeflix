@@ -117,12 +117,13 @@ const editProfile = (req, res) => {
 
 // TODO: Make sure a user can only delete themselves, unless admin, admin can delete their sub-users as well
 
-const deleteProfile = (req, res) => {
-    let id = req.params.id;
+// Extracting for to be reusable
+const deleteMethod = async (id, res) => {
 
-    User.deleteOne({_id: id})
+    await User.deleteOne({_id: id})
         .then((data) => {
-            if (data.deletedCount) {
+            if (data.acknowledged) {
+                const headers_sent = res.headersSent
                 res.status(200).json({
                     message: `User with id: ${id} deleted successfully`,
                 });
@@ -142,6 +143,38 @@ const deleteProfile = (req, res) => {
                 res.status(500).json(err);
             }
         });
+}
+
+const deleteProfile = async (req, res) => {
+    let id = req.params.id;
+    let admin = req.user && req.user.type === 'admin'
+
+    // id passed in params by an admin, admin is deleting somebody else
+    if (id && admin) {
+        // middleware has already confirmed that this is authorised, and there is a user with this id
+        // no need to findOne again
+        await deleteMethod(id, res)
+    }
+    // If admin doesn't pass an ID, admin is deleting themselves
+    else if (admin && !id) {
+        // find all user's who have this admin, have to delete them first. we can't have users who don't have admins.
+        await User.deleteMany({admin: req.user._id}).then(async (deletion) => {
+            if (deletion.acknowledged) {
+                // deleted the users, now delete the admin themselves
+                await deleteMethod(req.user._id, res)
+            }
+        }).catch((e) => {
+            res.status(500).json({
+                message: 'Sorry. Something went wrong deleting this admin account.'
+            })
+        })
+    }
+    // If user is non-admin, and no ID passed, a user/child is deleting themselves
+    else if (!admin && !id) {
+        return await deleteMethod(req.user._id, res)
+    }
+
+
 };
 
 const viewProfile = (req, res) => {
@@ -178,6 +211,7 @@ const viewProfile = (req, res) => {
 // View all profiles related to one-another
 // Will return the admin and their sub-users
 const manageProfiles = async (req, res) => {
+    // Search by the ID of the person currently logged in
     const id = mongoose.mongo.ObjectId(req.user._id);
     const populate = req.query.populate
 
