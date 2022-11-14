@@ -5,7 +5,7 @@ const {default: mongoose} = require("mongoose");
 
 // TODO: Stripe integration as part of this
 // TODO: Don't allow duplicate email addresses
-const register = (req, res) => {
+const register = async (req, res) => {
     let newUser = new User(req.body);
     newUser.password = bcrypt.hashSync(req.body.password, 10);
 
@@ -21,10 +21,11 @@ const register = (req, res) => {
 
     console.log(newUser);
 
-    newUser.save((err, user) => {
+    await newUser.save((err, user) => {
         if (err) {
             return res.status(400).json({
-                msg: err.message,
+                // Give special response for 11000, because it's bound to be common
+                msg: err.code === 11000 ? 'A user account with this email already exists! Email must be unique.' : err.message,
             });
         } else {
             user.password = undefined;

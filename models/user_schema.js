@@ -39,6 +39,7 @@ const userSchema = Schema(
                 "internet.email": ["#{firstName}", "#{lastName}"],
             },
             required: [true, "Email is required"],
+            unique: true
         },
         password: {
             type: String,
