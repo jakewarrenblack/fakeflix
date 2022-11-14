@@ -1,6 +1,5 @@
 const Avatar = require("../models/avatar_schema").model;
 const Title = require("../models/title_schema");
-;
 const {getFilter} = require("../utils/age_ratings");
 const mongoose = require("mongoose");
 
@@ -55,31 +54,34 @@ const getFavourites = async (qty = 1, object) => {
 
 const assignValues = async (objects) => {
     let others = []
+    let admins = []
     // Find all the admins in our generated users
-    let admins = await objects.filter(async (object) => {
-        if (object.type === "admin") {
+    for (let i = 0; i < objects.length; i++) {
+        if (objects[i].type === "admin") {
             // this value is being faked, but I don't need it in this case. an admin doesn't need an admin ID.
-            delete object.admin
-            delete object.my_list;
+            delete objects[i].admin
+            // Remove temporarily faked values for my_list
+            delete objects[i].my_list;
             const favRand = Math.floor(Math.random() * 12) + 1;
 
-            await getFavourites(favRand, object).then((res) => {
-                // Remove any faked favourites first
-                object.my_list = res
+            await getFavourites(favRand, objects[i]).then((res) => {
+
+                admins.push({
+                    // Generate an ID for this user:
+                    // Remember this is done intentionally, so we can refer to this ID *before* it gets saved to the DB
+                    // Usually we'd just use the one MongoDB generates for us, but  that's not possible since we want *real*
+                    // references between objects before inserting these users
+                    ...objects[i],
+                    _id: new mongoose.mongo.ObjectId(),
+                    my_list: res
+                })
             })
 
-            return {
-                // Generate an ID for this user:
-                // Remember this is done intentionally, so we can refer to this ID *before* it gets saved to the DB
-                // Usually we'd just use the one MongoDB generates for us, but  that's not possible since we want *real*
-                // references between objects before inserting these users
-                ...object,
-                _id: new mongoose.mongo.ObjectId(),
-            };
+
         } else {
-            others.push(object)
+            others.push(objects[i])
         }
-    });
+    }
 
     let updated_users = [];
     for (let i = 0; i < others.length; i++) {
@@ -116,7 +118,7 @@ const assignValues = async (objects) => {
         updated_users.push(object);
     }
 
-    return updated_users;
+    return [...updated_users, ...admins]
 };
 
 const getImage = (num) =>

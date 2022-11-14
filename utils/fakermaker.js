@@ -66,8 +66,8 @@ const fakerMaker = async (qty, type) => {
             }
 
             if (schema === user_schema) {
-                await assignValues(objects).then((res) => {
-                    return res;
+                return await assignValues(objects).then((res) => {
+                    objects = res
                 });
             }
 
