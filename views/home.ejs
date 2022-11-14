@@ -3,13 +3,15 @@
 <title>Stripe Payment Portal</title>
 <body>
 <h1>FakeFlix Payment Gateway</h1>
-<br/>
+<hr/>
 <b>Email: <span><%= email %></span></b>
 
-<h2>You're About to Purchase:</h2>
+<h3>You're About to Purchase:</h3>
 
 <b>Subscription Type: <span><%= subscription %>, €<%= price %></span></b>
 
+<br/>
+<br/>
 
 <form action="http://localhost:3000/charge" method="POST">
     <!-- hidden fields for passing data in our POST request -->
@@ -23,7 +25,7 @@
             src="https://checkout.stripe.com/v2/checkout.js"
             class="stripe-button"
             data-key="<%= key %>"
-            data-amount="<%= price %>"
+            data-amount=""
             data-currency="eur"
             data-name="fakeflix"
             data-description="Service subscription"
