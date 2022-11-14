@@ -11,9 +11,8 @@
 <b>Subscription Type: <span><%= subscription %>, €<%= price %></span></b>
 
 
-<form action="charge" method="POST">
+<form action="http://localhost:3000/charge" method="POST">
     <!-- hidden fields for passing data in our POST request -->
-    <input name="user_id" type="hidden" value="<%= user_id %>"/>
     <input name="price" type="hidden" value="<%= price %>"/>
     <input name="email" type="hidden" value="<%= email %>"/>
     <input name="subscription_type" type="hidden" value="<%= subscription %>"/>

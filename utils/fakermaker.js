@@ -30,7 +30,7 @@ const fakerMaker = async (qty, type) => {
                     jsf.option("alwaysFakeOptionals", true);
 
                     // Special type for 'staff' updating/adding/removing film and show listings
-                    jsf.option('ignoreProperties', ['database_admin'])
+                    jsf.option('ignoreProperties', ['database_admin', 'stripe_details'])
 
                     await getAvatar().then((res) => {
                         avatar = res;

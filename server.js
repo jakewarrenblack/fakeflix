@@ -8,6 +8,12 @@ const {loginRequired} = require("./controllers/auth_controller");
 require("./utils/db.js")();
 app.use(express.json());
 app.use(express.static("public"));
+const path = require('path')
+const {charge} = require('./utils/stripe/charge')
+const bodyParser = require('body-parser')
+// Need bodyParser for reading form data from home.ejs
+app.use(bodyParser.urlencoded({extended: true}));
+const stripe = require('stripe')
 
 app.use((req, res, next) => {
     let header = req.headers?.authorization?.split(" ");
@@ -23,11 +29,26 @@ app.use((req, res, next) => {
     next();
 });
 
+app.set('views', path.join(__dirname, 'views'))
+// Using the ejs template engine
+// ejs is very similar to html
+app.set('view engine', 'ejs')
+
+
 app.use("/api/users", require("./routes/users"));
 // Putting loginRequired here, because *every* Avatar route is protected
 app.use("/api/avatars", loginRequired, require("./routes/avatars"));
 app.use("/api/titles", require("./routes/titles"));
+app.post('/charge', async (req, res) => {
+    charge(req, res).then(() => {
+        res.send('Registration and payment successful. Thank you!')
+    })
+        .catch(e => res.status(500).json({msg: e}))
+})
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
 });
+
+
+module.exports = app

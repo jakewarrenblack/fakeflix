@@ -3,7 +3,12 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const {default: mongoose} = require("mongoose");
 
-// TODO: Stripe integration as part of this
+const subscriptions = {
+    'Movies': 5.99,
+    'Shows': 5.99,
+    'Shows & Movies': 12.99
+}
+
 const register = async (req, res) => {
     let newUser = new User(req.body);
     newUser.password = bcrypt.hashSync(req.body.password, 10);
@@ -22,14 +27,25 @@ const register = async (req, res) => {
 
     await newUser.save((err, user) => {
         if (err) {
-            return res.status(400).json({
+            res.status(400).json({
                 // Give special response for 11000, because it's bound to be common
                 msg: err.code === 11000 ? 'A user account with this email already exists! Email must be unique.' : err.message,
             });
         } else {
             user.password = undefined;
-            return res.status(201).json(user);
+            // passing query params to checkout
+            res.render('Home', {
+                // values received through query params and passed into our form
+                // then the form will make a POST request to /charge, running the charge method
+                // in there, we'll get our variables from the request body
+                key: ***REMOVED***,
+                price: subscriptions[newUser.subscription],
+                subscription: newUser.subscription,
+                email: newUser.email
+            })
         }
+
+
     });
 };
 

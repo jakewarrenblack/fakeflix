@@ -15,6 +15,11 @@ const {
 
 router
     .post("/register", register)
+
+    // .post('/register', (req, res) => {
+    //     //res.redirect(307, '/charge');
+    // })
+
     .post("/login", login)
     // Make sure a user/child is editing themselves only
     // An admin can edit their sub users or themselves

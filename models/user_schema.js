@@ -118,6 +118,9 @@ const userSchema = Schema(
             type: Number,
             faker: "datatype.number",
         },
+        stripe_details: {
+            type: Schema.Types.Mixed
+        }
     },
     {timestamps: true}
 );
