@@ -9,7 +9,7 @@ const getQueryParams = (req) => {
     let limit = req.query.limit && parseInt(req.query.limit);
     // Make sure this is a valid sorting value by checking it against the fields in the schema
     let sort = Object.keys(Title.schema.paths).includes(req.query?.sort) && req.query.sort;
-    let direction = ['asc', 'desc'].includes(req.query.direction) && req.query.direction;
+    let direction = req?.query?.order === 'asc' ? 1 : -1 || undefined
 
     // Creating another filter to make sure the value we're sorting by is not null
     // E.g. if sorting by imdb_id, many Titles don't have an imdb_id, so will appear higher than the highest rating in the list when sorted
@@ -324,14 +324,26 @@ const getShow = async (req, res) => {
         // If we received a valid imdb id, search using that, otherwise try searching by title
         search_type = imdb_id ? 'imdb_id' : 'title';
 
-        let {sort, limit, direction} = getQueryParams(req)
+        let {limit, sort, direction} = getQueryParams(req)
 
-        pipeline = sort || direction || limit ? searchPipeline(request_value, req.filter, sort, direction) : searchPipeline(request_value, filter)
+        let tempFilter = {
+            ...req.filter,
+            type: {
+                $regex: 'SHOW',
+            },
+        }
+
+        // passing undefined values is fine
+        pipeline = searchPipeline(request_value, tempFilter, sort, direction)
+
+        // pipeline = sort || direction || limit ? searchPipeline(request_value, tempFilter, sort, direction) : searchPipeline(request_value, tempFilter)
 
         let additionalInfo = req?.query?.moreDetail
 
 
         if (search_type === 'title') {
+            // Endpoint is specifically for shows, filter out movies on the filter object temporarily, regardless of the subscription type
+
             await Title.aggregate([pipeline]).limit(5)
                 //.allowDiskUse(true)
                 .then(async (data) => {
@@ -349,7 +361,7 @@ const getShow = async (req, res) => {
                         res.status(200).json(data);
                     } else {
                         res.status(404).json({
-                            message: `No valid results found for '${request_value}'.Note the following attributes apply to your account:`,
+                            message: `No valid results found for '${request_value}'. Remember this is endpoint is for shows only. Note the following attributes apply to your account:`,
                             Attributes: {
                                 "Maturity types": filter.age_certification.$in.filter(rating => rating),
                                 "Subscription type": filter.type.$regex
@@ -373,7 +385,7 @@ const getShow = async (req, res) => {
         } else {
             await Title.find({
                 imdb_id: request_value,
-                type: 'SHOW',
+                type: 'SHOW'
             }).limit(req.query.limit ?? 5).then(async (aggregateResponse) => {
                 let response = aggregateResponse;
 
@@ -389,7 +401,7 @@ const getShow = async (req, res) => {
 
                 } else {
                     res.status(404).json({
-                        message: `No titles found`,
+                        message: `No titles found. Remember, this endpoint is for shows only.`,
                     });
                 }
 

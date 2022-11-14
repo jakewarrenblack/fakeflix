@@ -6,12 +6,12 @@ const compareFields = (response, filter, checkSubscriptionType = false) => {
     // if !checkSubscriptionType, verify the user's subscription type
     if (checkSubscriptionType) {
         values = [
-            {"Subscription type": filter.type.$regex === response.type ?? response[0].type ?? response._doc.type}
+            {"Subscription type": filter.type.$regex === response?.type ? response[0]?.type : response?._doc?.type}
         ]
         // otherwise, just check if the maturity settings match up with the resource
         // e.g. a user might not want to see 18+ results
     } else {
-        values = [{"Maturity settings": filter.age_certification.$in.includes(response.age_certification)}]
+        values = [{"Maturity settings": filter.age_certification.$in.includes(response?.age_certification)}]
     }
 
 
@@ -34,7 +34,7 @@ const compareFields = (response, filter, checkSubscriptionType = false) => {
 // and some are authorised, others not, e.g. searching for 'batman' but subscribed only to shows
 // shouldn't return 'batman returns', a movie, but should return 'batman the animated series'
 const getAuthorisedResults = async (data, filter, checkSubscriptionType) => {
-    if (data) {
+    if (data || data.length > 0) {
 
         let failing_fields = []
         let authorised_results = data.filter((result, i, data) => {

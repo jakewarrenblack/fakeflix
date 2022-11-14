@@ -1,11 +1,8 @@
 const {getFilter} = require("../utils/age_ratings");
 const Title = require('../models/title_schema')
-const verifyAuth = require('../utils/verify_auth')
 const {getAuthorisedResults, compareFields} = require("../utils/verify_auth");
-const {getByName} = require('./title_controller')
 const mongoose = require('mongoose')
 const validate_imdb_id = require('../utils/imdb_validate')
-const {fa} = require("faker/lib/locales");
 const searchPipeline = require('../utils/search_pipeline')
 const User = require('../models/user_schema').model
 
@@ -202,9 +199,19 @@ const checkSubscriptionType = async (req, res, next) => {
                         res.status(500).json(err);
                     }
                 });
+                // This endpoint is for shows only
+                // Modify user's filter object to search only for shows regardless of their plan
             } else if (request_type === 'show') {
                 let request_value = request_type == 'show' ? req?.params?.show : req?.params?.movie
                 let search_type;
+
+                let tempFilter = {
+                    ...req.filter,
+                    $regex: {
+                        type: 'SHOW'
+                    }
+                }
+
 
                 let imdb_id_valid = request_value && validate_imdb_id(request_value)
 
@@ -214,10 +221,13 @@ const checkSubscriptionType = async (req, res, next) => {
                 if (search_type === 'title') {
                     // aggregate is better to use if searching by title, has fuzzy search
                     // I could RegEx it, but fuzzy search is more likely to get it right
-                    let response = await aggregateTitle(searchPipeline, request_value, req, res)
+                    let response = await aggregateTitle(searchPipeline, request_value, {
+                        ...req,
+                        filter: tempFilter
+                    }, res)
 
-                    authorised_results = response.authorised_results;
-                    failing_fields = response.failing_fields
+                    authorised_results = response?.authorised_results;
+                    failing_fields = response?.failing_fields
 
                 } else {
                     await Title.find({

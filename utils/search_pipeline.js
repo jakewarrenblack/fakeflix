@@ -42,7 +42,7 @@ const searchAndMatch = (query, filter) => [{
 
     }]
 
-const searchMatchSort = (query, filter, sort, direction) => [{
+const searchMatchSort = (query, filter, sortBy, direction) => [{
     '$search': {
         'index': 'default',
         'text': {
@@ -66,16 +66,14 @@ const searchMatchSort = (query, filter, sort, direction) => [{
         },
 
     },
-    {
-        "$sort": {
-            sort: direction === 'asc' ? 1 : -1
-        }
-    }]
+]
 
 
 const searchPipeline = (request_value, filter, sort, direction) => {
-    let args = [request_value, filter, sort, direction]
+    let args = [request_value, filter, {sort, direction}]
     let res;
+
+    if (direction) direction = direction == 'asc' ? 1 : -1
 
     if (sort && direction) {
         res = searchMatchSort(...args)
