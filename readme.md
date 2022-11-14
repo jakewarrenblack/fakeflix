@@ -109,3 +109,7 @@ DELETE
 - **Stripe integration** - When registering a new user, stripe customer and charge objects are generated, the correct
   fee is charged depending on the type of subscription the user has chosen, and stripe details are applied to the user
   object. The transaction is saved to my Stripe account, appearing on the dashboard.
+- Avatar images hosted on S3 bucket.
+  
+  ![fakeflix1](https://user-images.githubusercontent.com/47800618/201789639-6cccead0-e5ed-40a8-8c9a-5cd4de6e8c1a.png)![fakeflix2](https://user-images.githubusercontent.com/47800618/201789650-08300fd7-09ab-448b-b366-b4aef37222e3.png)
+
