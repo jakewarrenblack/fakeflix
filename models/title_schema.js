@@ -63,15 +63,15 @@ const titleSchema = Schema(
         seasons: {
             type: Number,
         },
-        imdb_id: {type: String},
+        imdb_id: {type: String | String | null},
         // May not be present
-        imdb_score: {type: Number},
+        imdb_score: {type: Number | String | null},
 
-        imdb_votes: {type: Number},
+        imdb_votes: {type: Number | String | null},
 
-        tmdb_popularity: {type: Number},
+        tmdb_popularity: {type: Number | String | null},
 
-        tmdb_score: {type: Number},
+        tmdb_score: {type: Number | String | null},
         // to validate based on user's plan when requesting
         // basic plan retrieves 'good', standard retrieves, 'better', etc
         // we have all listings in all qualities,

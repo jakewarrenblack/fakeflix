@@ -27,10 +27,10 @@ const {
 
 // For these two:
 // we'll filter individually. they can access these paths, but the resources returned will be limited based on their subscription, user type, and maturity settings
-// The user may include a type,
+// may pass ?limit=x to this endpoint
 router.get("/all", loginRequired, viewAll);
 
-// useful to have this too if a user wants a broad search, not necessarily searching by type (this uses fuzzy search)
+// Useful for when a user wants a broad search, not necessarily searching by type (this uses fuzzy search)
 router.get("/title/:title", [loginRequired, checkSubscriptionType], getByName);
 
 // for this one, a user subscribed only to 'movies' cannot access shows, and vice-versa
@@ -42,6 +42,7 @@ router.get("/type/:type", [loginRequired, checkSubscriptionType], getAllByType);
 router.get("/show/:show", [loginRequired, checkSubscriptionType], getShow);
 
 // searching by generated Mongo ID here, not IMDB ID
+// may pass ?limit=x to this endpoint
 router.get("/id/:id", [loginRequired, checkSubscriptionType], getById);
 
 // Only database admins can create/update/delete Title listings

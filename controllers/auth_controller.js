@@ -154,7 +154,7 @@ const checkSubscriptionType = async (req, res, next) => {
         const filter = req.filter.type.$regex
         if ((request_value === 'SHOWS' || request_value === 'MOVIES') && filter) {
             // e.g. if filter says we can view 'movies and shows' and we requested 'movies', go ahead
-            if (!request_type.includes(filter)) {
+            if (!request_value.includes(filter)) {
                 res.status(401).json({
                     msg: `Sorry, your subscription doesn't include the type of resource you requested. Upgrade your subscription to view this resource.`
                 })
@@ -266,8 +266,6 @@ const checkSubscriptionType = async (req, res, next) => {
                 // multiple results for other request types
                 req.unfilteredResponse = authorised_results
             }
-
-            request_type === 'id' ? req.unfilteredResponse = response : req.unfilteredResponse = authorised_results
             next()
         }
 

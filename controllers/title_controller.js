@@ -5,6 +5,33 @@ const searchPipeline = require('../utils/search_pipeline')
 const axios = require('axios')
 const {model: User} = require("../models/user_schema");
 
+const getQueryParams = (req) => {
+    let limit = req.query.limit && parseInt(req.query.limit);
+    // Make sure this is a valid sorting value by checking it against the fields in the schema
+    let sort = Object.keys(Title.schema.paths).includes(req.query?.sort) && req.query.sort;
+    let direction = ['asc', 'desc'].includes(req.query.direction) && req.query.direction;
+
+    // Creating another filter to make sure the value we're sorting by is not null
+    // E.g. if sorting by imdb_id, many Titles don't have an imdb_id, so will appear higher than the highest rating in the list when sorted
+    let secondFilter;
+    if (sort) {
+        secondFilter = {
+            // ES6 computed property name, using a variable as an object key
+            // Values are also often empty strings despite being of type number in the schema, so filter these out if we're trying to sort
+            $and: [{[sort]: {$ne: null}}, {[sort]: {$ne: ""}}]
+        }
+    }
+
+    let queryParams = {
+        limit,
+        sort,
+        direction,
+        secondFilter
+    }
+
+    return queryParams
+}
+
 const checkFailingFields = (req, filter, query, res) => {
 
 
@@ -12,7 +39,7 @@ const checkFailingFields = (req, filter, query, res) => {
 
     if (req.unfilteredResponse) {
         if (typeof req.unfilteredResponse === 'object') {
-            req.unfilteredResponse = req.unfilteredResponse[0]
+            req.unfilteredResponse = req.unfilteredResponse[0] ?? req.unfilteredResponse._doc
         } else {
             if (!req.unfilteredResponse?._id)
                 req.unfilteredResponse = req.unfilteredResponse._doc
@@ -26,16 +53,16 @@ const checkFailingFields = (req, filter, query, res) => {
 
     if (failingFields?.length) {
         res.status(404).json({
-            message: `Results were found for '${query}', but your it doesn't match up with your maturity settings. The following settings are applied:`,
+            message: `Results were found for '${query}', but don't match up with your maturity settings. The following settings are applied:`,
             // Filtering out 'falsey' values, which I've just applied to the unrestricted category to include unrated titles
             "Maturity types": filter.age_certification.$in.filter(rating => rating),
         });
+        return;
+    } else {
+        return false
     }
 }
 
-
-// TODO: Pagination, provide param for number of results, 10, 20, 40, etc, sort by asc/desc, e.g. imdb score
-// TODO: Maybe dynamic .find method, pass in some param like category
 
 const viewAll = (req, res) => {
     // A filter is generated based on the user's type, subscription type, and maturity settings
@@ -45,7 +72,13 @@ const viewAll = (req, res) => {
 
     // maturity settings inherit from one another,
     // e.g. a user with 'unrestricted' settings will see listings from all 3 maturity categories
-    Title.find(req.filter)
+    let {sort, limit, direction, secondFilter} = getQueryParams(req)
+
+    // If second filter is present, combine the two
+    // syntax for two combined filters: { $or : [{age_certification: {$in: ['TV-MA']}}, {age_certification: {$ne: null}}]}
+    Title.find(secondFilter ? {$or: [req.filter, secondFilter]} : req.filter)
+        .sort([[sort ?? 'title', direction === 'asc' ? 1 : -1]])
+        .limit(limit ?? 50)
         .then((data) => {
             //console.log(data);
             if (data.length > 0) {
@@ -84,11 +117,17 @@ const getByName = async (req, res) => {
         }
     }
 
+    let {sort, limit, direction} = getQueryParams(req)
+
 
     // If all is well, our filters allow for accessing this resource
-    Title.aggregate([
-        searchPipeline(title, filter)
-    ]).limit(5)
+
+    // with an aggregate search, the sort value must be applied to the pipeline
+    let pipeline;
+    pipeline = sort && direction ? searchPipeline(title, filter, sort, direction) : searchPipeline(title, filter)
+
+    Title.aggregate([pipeline])
+        .limit(limit ?? 5)
         .then((data) => {
 
             if (data.length) {
@@ -124,38 +163,42 @@ const getByName = async (req, res) => {
 const getById = async (req, res) => {
     let id = req.params.id;
     const filter = req.filter
+
     // If the user got past the middleware, we know they're authorised to access whatever it is they're requesting,
     // now their filters will determine whether it's returned or not
 
-    // checkFailingField will return if there are failing fields, no need to .then, .catch
-    checkFailingFields(req, filter, id, res)
-
-
-    Title.findOne({_id: id})
-        .then((data) => {
-            if (data) {
-                res.status(200).json(data);
-            } else {
-                res.status(404).json({
-                    message: `Title with id: ${id} not found`,
-                });
-            }
-        })
-
-
+    // checkFailingField will respond if there are failing fields, returns false if no failing fields (fields that are incompatible with maturity settings, e.g. a child won't get an 18+ film)
+    if (!checkFailingFields(req, filter, id, res)) {
+        Title.findOne({_id: id})
+            .limit(req.query.limit ?? 5)
+            .then((data) => {
+                if (data) {
+                    res.status(200).json(data);
+                } else {
+                    res.status(404).json({
+                        message: `Title with id: ${id} not found`,
+                    });
+                }
+            })
+    }
 };
 
 // Because of our checkSubscriptionType middleware, we know that if a user gets to this point,
 // they're authorised to view /titles/shows, or /titles/movies
 const getAllByType = (req, res) => {
+
     let type = req.params.type.toUpperCase()
     // if it's plural, make it singular to conform with Title's 'SHOW' or 'MOVIE' types
     type = type.slice(0, type[type.length - 1] === 'S' && -1) // -1 is last char
-    Title.find({
-        // spread operator to replace filter's existing 'type' attribute with the type received from params
-        ...req.filter,
-        type: type
-    })
+
+    let {sort, limit, direction, secondFilter} = getQueryParams(req)
+
+
+    // If sort passed, apply the second filter to remove null values for the sort, improving sorting accuracy
+    // spread operator to replace filter's existing 'type' attribute with the type received from params
+    Title.find({...req.filter, type: type, ...secondFilter})
+        .sort([[sort ?? 'title', direction === 'asc' ? 1 : -1]])
+        .limit(limit ?? 5)
         .then((data) => {
             if (data) {
                 res.status(200).json(data);
@@ -268,98 +311,192 @@ const getAdditionalShowInfo = async (response) => {
         }).catch((e) => console.log(e))
 }
 
+// const getShow = async (req, res) => {
+//     let request_value = req?.params?.show
+//     let filter = req.filter
+//     // Will respond if failing fields present. Checking the unfiltered response received from auth_controller
+//     if (!checkFailingFields(req, req.filter, request_value, res)) {
+//         let search_type;
+//         let imdb_id = request_value && validate_imdb_id(request_value)
+//
+//         // If we received a valid imdb id, search using that, otherwise try searching by title
+//         search_type = imdb_id ? 'imdb_id' : 'title';
+//
+//         let pipeline = (searchPipeline(request_value, filter))
+//
+//         let additionalInfo = req?.query?.moreDetail
+//
+//
+//         if (search_type === 'title') {
+//             await Title.aggregate([pipeline]).limit(5)
+//                 //.allowDiskUse(true)
+//                 .then(async (data) => {
+//
+//                     if (data.length) {
+//
+//                         if (additionalInfo) {
+//                             for (let i = 0; i < data.length; i++) {
+//                                 data[i].additional_info = await getAdditionalShowInfo(data[i]).then((res) => res)
+//                             }
+//
+//                         }
+//
+//
+//                         res.status(200).json(data);
+//                     } else {
+//                         res.status(404).json({
+//                             message: `No valid results found for '${request_value}'.Note the following attributes apply to your account:`,
+//                             Attributes: {
+//                                 "Maturity types": filter.age_certification.$in.filter(rating => rating),
+//                                 "Subscription type": filter.type.$regex
+//                             }
+//                         });
+//                     }
+//
+//
+//                 })
+//                 .catch((err) => {
+//                     console.error(err);
+//                     if (err.name === "CastError") {
+//                         res.status(400).json({
+//                             message: `Bad request, "${name}" is not a valid name`,
+//                         });
+//                     } else {
+//                         res.status(500).json(err);
+//                     }
+//                 });
+//
+//         } else {
+//             await Title.find({
+//                 imdb_id: request_value,
+//                 type: 'SHOW',
+//             }).limit(req.query.limit ?? 5).then(async (aggregateResponse) => {
+//                 let response = aggregateResponse;
+//
+//                 if (response) {
+//
+//                     if (additionalInfo) {
+//                         for (let i = 0; i < response.length; i++) {
+//                             response[i]._doc.additional_info = await getAdditionalShowInfo(response[i]).then((res) => res)
+//                         }
+//                     }
+//
+//                     res.status(200).json(response);
+//
+//                 } else {
+//                     res.status(404).json({
+//                         message: `No titles found`,
+//                     });
+//                 }
+//
+//             }).catch((err) => {
+//                 console.error(err);
+//                 if (err.name === "CastError") {
+//                     res.status(400).json({
+//                         message: `Bad request.`,
+//                     });
+//                 } else {
+//                     res.status(500).json(err);
+//                 }
+//             });
+//         }
+//     }
+//
+// }
+
+
 const getShow = async (req, res) => {
     let request_value = req?.params?.show
     let filter = req.filter
     // Will respond if failing fields present. Checking the unfiltered response received from auth_controller
-    checkFailingFields(req, req.filter, request_value, res)
-    let search_type;
-    let imdb_id = request_value && validate_imdb_id(request_value)
+    if (!checkFailingFields(req, req.filter, request_value, res)) {
+        let search_type;
+        let imdb_id = request_value && validate_imdb_id(request_value)
 
-    // If we received a valid imdb id, search using that, otherwise try searching by title
-    search_type = imdb_id ? 'imdb_id' : 'title';
+        // If we received a valid imdb id, search using that, otherwise try searching by title
+        search_type = imdb_id ? 'imdb_id' : 'title';
 
-    let pipeline = (searchPipeline(request_value, filter))
+        let pipeline = (searchPipeline(request_value, filter))
 
-    let additionalInfo = req?.query?.moreDetail
+        let additionalInfo = req?.query?.moreDetail
 
 
-    if (search_type === 'title') {
-        await Title.aggregate([pipeline]).limit(5)
-            //.allowDiskUse(true)
-            .then(async (data) => {
+        if (search_type === 'title') {
+            await Title.aggregate([pipeline]).limit(5)
+                //.allowDiskUse(true)
+                .then(async (data) => {
 
-                if (data.length) {
+                    if (data.length) {
 
-                    if (additionalInfo) {
-                        for (let i = 0; i < data.length; i++) {
-                            data[i].additional_info = await getAdditionalShowInfo(data[i]).then((res) => res)
+                        if (additionalInfo) {
+                            for (let i = 0; i < data.length; i++) {
+                                data[i].additional_info = await getAdditionalShowInfo(data[i]).then((res) => res)
+                            }
+
                         }
 
+
+                        res.status(200).json(data);
+                    } else {
+                        res.status(404).json({
+                            message: `No valid results found for '${request_value}'.Note the following attributes apply to your account:`,
+                            Attributes: {
+                                "Maturity types": filter.age_certification.$in.filter(rating => rating),
+                                "Subscription type": filter.type.$regex
+                            }
+                        });
                     }
 
 
-                    res.status(200).json(data);
+                })
+                .catch((err) => {
+                    console.error(err);
+                    if (err.name === "CastError") {
+                        res.status(400).json({
+                            message: `Bad request, "${name}" is not a valid name`,
+                        });
+                    } else {
+                        res.status(500).json(err);
+                    }
+                });
+
+        } else {
+            await Title.find({
+                imdb_id: request_value,
+                type: 'SHOW',
+            }).limit(req.query.limit ?? 5).then(async (aggregateResponse) => {
+                let response = aggregateResponse;
+
+                if (response) {
+
+                    if (additionalInfo) {
+                        for (let i = 0; i < response.length; i++) {
+                            response[i]._doc.additional_info = await getAdditionalShowInfo(response[i]).then((res) => res)
+                        }
+                    }
+
+                    res.status(200).json(response);
+
                 } else {
                     res.status(404).json({
-                        message: `No valid results found for '${request_value}'.Note the following attributes apply to your account:`,
-                        Attributes: {
-                            "Maturity types": filter.age_certification.$in.filter(rating => rating),
-                            "Subscription type": filter.type.$regex
-                        }
+                        message: `No titles found`,
                     });
                 }
 
-
-            })
-            .catch((err) => {
+            }).catch((err) => {
                 console.error(err);
                 if (err.name === "CastError") {
                     res.status(400).json({
-                        message: `Bad request, "${name}" is not a valid name`,
+                        message: `Bad request.`,
                     });
                 } else {
                     res.status(500).json(err);
                 }
             });
-
-    } else {
-        await Title.find({
-            imdb_id: request_value,
-            type: 'SHOW',
-        }).limit(req.query.limit ?? 5).then(async (aggregateResponse) => {
-            let response = aggregateResponse;
-
-            if (response) {
-
-                if (additionalInfo) {
-                    for (let i = 0; i < response.length; i++) {
-                        response[i]._doc.additional_info = await getAdditionalShowInfo(response[i]).then((res) => res)
-                    }
-                }
-
-                res.status(200).json(response);
-
-            } else {
-                res.status(404).json({
-                    message: `No titles found`,
-                });
-            }
-
-        }).catch((err) => {
-            console.error(err);
-            if (err.name === "CastError") {
-                res.status(400).json({
-                    message: `Bad request.`,
-                });
-            } else {
-                res.status(500).json(err);
-            }
-        });
+        }
     }
-
-
 }
+
 
 module.exports = {
     viewAll,
