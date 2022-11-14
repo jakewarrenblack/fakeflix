@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<title>Stripe Payment Portal</title>
+<body>
+<h1>FakeFlix Payment Gateway</h1>
+<br/>
+<b>Email: <span><%= email %></span></b>
+
+<h2>You're About to Purchase:</h2>
+
+<b>Subscription Type: <span><%= subscription %>, €<%= price %></span></b>
+
+
+<form action="charge" method="POST">
+    <!-- hidden fields for passing data in our POST request -->
+    <input name="user_id" type="hidden" value="<%= user_id %>"/>
+    <input name="price" type="hidden" value="<%= price %>"/>
+    <input name="email" type="hidden" value="<%= email %>"/>
+    <input name="subscription_type" type="hidden" value="<%= subscription %>"/>
+
+    <!-- Open the stripe payment form -->
+    <script
+
+            src="https://checkout.stripe.com/v2/checkout.js"
+            class="stripe-button"
+            data-key="<%= key %>"
+            data-amount="<%= price %>"
+            data-currency="eur"
+            data-name="fakeflix"
+            data-description="Service subscription"
+            data-email="<%= email %>"
+            data-locale="auto">
+
+    </script>
+</form>
+</body>
+</html>
