@@ -148,10 +148,11 @@ const checkSubscriptionType = async (req, res, next) => {
 
     if (request_type === 'type') {
         request_value = request_value.toUpperCase()
+        // This could be a string, or actual regex
         const filter = req.filter.type.$regex
         if ((request_value === 'SHOWS' || request_value === 'MOVIES') && filter) {
             // e.g. if filter says we can view 'movies and shows' and we requested 'movies', go ahead
-            if (!request_value.includes(filter)) {
+            if (filter.type === String ? !request_value.includes(filter) : !filter.test(request_value)) {
                 res.status(401).json({
                     msg: `Sorry, your subscription doesn't include the type of resource you requested. Upgrade your subscription to view this resource.`
                 })
