@@ -63,20 +63,16 @@ const titleSchema = Schema(
         seasons: {
             type: Number,
         },
-        imdb_id: {type: String | String | null},
-        // May not be present
-        imdb_score: {type: Number | String | null},
+        imdb_id: {type: Schema.Types.Mixed},
+        // May not be present, sometimes "" or null, so allowing any value for the purpose of searching and sorting
+        imdb_score: {type: Schema.Types.Mixed},
 
-        imdb_votes: {type: Number | String | null},
+        imdb_votes: {type: Schema.Types.Mixed},
 
-        tmdb_popularity: {type: Number | String | null},
+        tmdb_popularity: {type: Schema.Types.Mixed},
 
-        tmdb_score: {type: Number | String | null},
-        // to validate based on user's plan when requesting
-        // basic plan retrieves 'good', standard retrieves, 'better', etc
-        // we have all listings in all qualities,
-        // so return an error if permission mismatch
-        // e.g. basic user requests best quality
+        tmdb_score: {type: Schema.Types.Mixed},
+
         video_quality: {
             type: String,
             enum: ["Good", "Better", "Best"],

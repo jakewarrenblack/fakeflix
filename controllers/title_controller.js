@@ -311,103 +311,11 @@ const getAdditionalShowInfo = async (response) => {
         }).catch((e) => console.log(e))
 }
 
-// const getShow = async (req, res) => {
-//     let request_value = req?.params?.show
-//     let filter = req.filter
-//     // Will respond if failing fields present. Checking the unfiltered response received from auth_controller
-//     if (!checkFailingFields(req, req.filter, request_value, res)) {
-//         let search_type;
-//         let imdb_id = request_value && validate_imdb_id(request_value)
-//
-//         // If we received a valid imdb id, search using that, otherwise try searching by title
-//         search_type = imdb_id ? 'imdb_id' : 'title';
-//
-//         let pipeline = (searchPipeline(request_value, filter))
-//
-//         let additionalInfo = req?.query?.moreDetail
-//
-//
-//         if (search_type === 'title') {
-//             await Title.aggregate([pipeline]).limit(5)
-//                 //.allowDiskUse(true)
-//                 .then(async (data) => {
-//
-//                     if (data.length) {
-//
-//                         if (additionalInfo) {
-//                             for (let i = 0; i < data.length; i++) {
-//                                 data[i].additional_info = await getAdditionalShowInfo(data[i]).then((res) => res)
-//                             }
-//
-//                         }
-//
-//
-//                         res.status(200).json(data);
-//                     } else {
-//                         res.status(404).json({
-//                             message: `No valid results found for '${request_value}'.Note the following attributes apply to your account:`,
-//                             Attributes: {
-//                                 "Maturity types": filter.age_certification.$in.filter(rating => rating),
-//                                 "Subscription type": filter.type.$regex
-//                             }
-//                         });
-//                     }
-//
-//
-//                 })
-//                 .catch((err) => {
-//                     console.error(err);
-//                     if (err.name === "CastError") {
-//                         res.status(400).json({
-//                             message: `Bad request, "${name}" is not a valid name`,
-//                         });
-//                     } else {
-//                         res.status(500).json(err);
-//                     }
-//                 });
-//
-//         } else {
-//             await Title.find({
-//                 imdb_id: request_value,
-//                 type: 'SHOW',
-//             }).limit(req.query.limit ?? 5).then(async (aggregateResponse) => {
-//                 let response = aggregateResponse;
-//
-//                 if (response) {
-//
-//                     if (additionalInfo) {
-//                         for (let i = 0; i < response.length; i++) {
-//                             response[i]._doc.additional_info = await getAdditionalShowInfo(response[i]).then((res) => res)
-//                         }
-//                     }
-//
-//                     res.status(200).json(response);
-//
-//                 } else {
-//                     res.status(404).json({
-//                         message: `No titles found`,
-//                     });
-//                 }
-//
-//             }).catch((err) => {
-//                 console.error(err);
-//                 if (err.name === "CastError") {
-//                     res.status(400).json({
-//                         message: `Bad request.`,
-//                     });
-//                 } else {
-//                     res.status(500).json(err);
-//                 }
-//             });
-//         }
-//     }
-//
-// }
-
 
 const getShow = async (req, res) => {
     let request_value = req?.params?.show
     let filter = req.filter
+    let pipeline;
     // Will respond if failing fields present. Checking the unfiltered response received from auth_controller
     if (!checkFailingFields(req, req.filter, request_value, res)) {
         let search_type;
@@ -416,7 +324,9 @@ const getShow = async (req, res) => {
         // If we received a valid imdb id, search using that, otherwise try searching by title
         search_type = imdb_id ? 'imdb_id' : 'title';
 
-        let pipeline = (searchPipeline(request_value, filter))
+        let {sort, limit, direction} = getQueryParams(req)
+
+        pipeline = sort || direction || limit ? searchPipeline(request_value, req.filter, sort, direction) : searchPipeline(request_value, filter)
 
         let additionalInfo = req?.query?.moreDetail
 
