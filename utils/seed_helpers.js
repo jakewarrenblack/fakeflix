@@ -107,11 +107,8 @@ const assignValues = async (objects) => {
 
         // Using our random number from 1-12 to generate random favourites, pulling out Title IDs
         // These favourites will also conform to this user's subscription type, maturity settings, and account type
-//        object.my_list = await getFavourites(favRand, object).then((res) => res);
-
         await getFavourites(favRand, object).then((res) => {
             // Remove any faked favourites first
-
             object.my_list = res
         })
 
