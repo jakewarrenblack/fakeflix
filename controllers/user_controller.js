@@ -38,7 +38,7 @@ const register = async (req, res) => {
                 // values received through query params and passed into our form
                 // then the form will make a POST request to /charge, running the charge method
                 // in there, we'll get our variables from the request body
-                key: ***REMOVED***,
+                key: process.env.PK_TEST,
                 price: subscriptions[newUser.subscription],
                 subscription: newUser.subscription,
                 email: newUser.email
