@@ -14,6 +14,9 @@ const bodyParser = require('body-parser')
 // Need bodyParser for reading form data from home.ejs
 app.use(bodyParser.urlencoded({extended: true}));
 const stripe = require('stripe')
+const cors = require('cors')
+
+app.use(cors)
 
 app.use((req, res, next) => {
     let header = req.headers?.authorization?.split(" ");
