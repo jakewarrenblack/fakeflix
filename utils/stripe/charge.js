@@ -53,7 +53,9 @@ const charge = async (req, res) => {
             currency: 'eur',
             description: `${subscription_type}`,
             customer: stripeDetails.id
-        }).then((res) => res)
+        }).then((stripeResponse) => res.status(200).json({
+            stripeResponse
+        }))
             .catch((e) => e)
     }).catch((e) => e)
 

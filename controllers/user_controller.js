@@ -34,10 +34,17 @@ const register = async (req, res) => {
         } else {
             user.password = undefined;
             // passing query params to checkout
-            res.render('Home', {
-                // values received through query params and passed into our form
-                // then the form will make a POST request to /charge, running the charge method
-                // in there, we'll get our variables from the request body
+            // res.render('Home', {
+            //     // values received through query params and passed into our form
+            //     // then the form will make a POST request to /charge, running the charge method
+            //     // in there, we'll get our variables from the request body
+            //     key: process.env.PK_TEST,
+            //     price: subscriptions[newUser.subscription],
+            //     subscription: newUser.subscription,
+            //     email: newUser.email
+            // })
+
+            res.status(200).json({
                 key: process.env.PK_TEST,
                 price: subscriptions[newUser.subscription],
                 subscription: newUser.subscription,

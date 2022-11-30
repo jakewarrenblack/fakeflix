@@ -42,12 +42,7 @@ app.use("/api/users", require("./routes/users"));
 // Putting loginRequired here, because *every* Avatar route is protected
 app.use("/api/avatars", loginRequired, require("./routes/avatars"));
 app.use("/api/titles", require("./routes/titles"));
-app.post('/charge', async (req, res) => {
-    charge(req, res).then(() => {
-        res.send('Registration and payment successful. Thank you!')
-    })
-        .catch(e => res.status(500).json({msg: e}))
-})
+app.post('/charge', charge)
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
