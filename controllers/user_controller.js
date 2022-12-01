@@ -2,6 +2,8 @@ const User = require("../models/user_schema").model;
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const {default: mongoose} = require("mongoose");
+const Stripe = require('stripe');
+const stripe = Stripe(process.env.STRIPE_API_KEY);
 
 const subscriptions = {
     'Movies': 5.99,
@@ -25,6 +27,8 @@ const register = async (req, res) => {
 
     console.log(newUser);
 
+    let key, price, subscription, email;
+
     await newUser.save((err, user) => {
         if (err) {
             res.status(400).json({
@@ -33,26 +37,29 @@ const register = async (req, res) => {
             });
         } else {
             user.password = undefined;
-            // passing query params to checkout
-            // res.render('Home', {
-            //     // values received through query params and passed into our form
-            //     // then the form will make a POST request to /charge, running the charge method
-            //     // in there, we'll get our variables from the request body
-            //     key: process.env.PK_TEST,
-            //     price: subscriptions[newUser.subscription],
-            //     subscription: newUser.subscription,
-            //     email: newUser.email
-            // })
+            key = process.env.PK_TEST,
+            price = subscriptions[newUser.subscription],
+            subscription = newUser.subscription,
+            email = newUser.email
 
-            res.status(200).json({
-                key: process.env.PK_TEST,
-                price: subscriptions[newUser.subscription],
-                subscription: newUser.subscription,
-                email: newUser.email
+             stripe.customers.create({
+                name: `${req.firstName} ${req.lastName}`,
+                email,
+                 // need to add a second step to the registration, swap form to a stripe form to get the token
+                 // passing user data and stripe token all together
+                source: req.token
+            }).then(async (stripeRes) => {
+                await stripe.charges.create({
+                    // Doesn't support floats and receives value in cents
+                    amount: parseInt(price) * 100,
+                    currency: 'eur',
+                    description: `${subscription}`,
+                    customer: stripeRes.id
+                }).then((stripeResponse) => res.status(200).json({
+                    stripeResponse
+                }))
             })
         }
-
-
     });
 };
 
