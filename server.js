@@ -40,7 +40,7 @@ app.set('view engine', 'ejs')
 
 app.use("/api/users", require("./routes/users"));
 // Putting loginRequired here, because *every* Avatar route is protected
-app.use("/api/avatars", loginRequired, require("./routes/avatars"));
+app.use("/api/avatars", require("./routes/avatars"));
 app.use("/api/titles", require("./routes/titles"));
 // app.post('/charge', charge)
 

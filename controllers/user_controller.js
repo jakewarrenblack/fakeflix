@@ -5,12 +5,6 @@ const {default: mongoose} = require("mongoose");
 const Stripe = require('stripe');
 const stripe = Stripe(process.env.STRIPE_API_KEY);
 
-const subscriptions = {
-    'Movies': 5.99,
-    'Shows': 5.99,
-    'Movies & Shows': 12.99
-}
-
 const register = async (req, res) => {
     let newUser = new User(req.body);
     newUser.password = bcrypt.hashSync(req.body.password, 10);
@@ -19,7 +13,7 @@ const register = async (req, res) => {
     let key, price, subscription, email;
 
     key = process.env.PK_TEST,
-    price = subscriptions[newUser.subscription],
+    price = req.body.body.amount
     subscription = newUser.subscription,
     email = newUser.email
 
@@ -32,7 +26,7 @@ const register = async (req, res) => {
     }).then(async (stripeRes) => {
         await stripe.charges.create({
             // Doesn't support floats and receives value in cents
-            amount: parseInt(price) * 100,
+            amount: amount*100,
             currency: 'eur',
             description: `${subscription}`,
             customer: stripeRes.id
