@@ -301,14 +301,7 @@ const viewProfile = (req, res) => {
 const manageProfiles = async (req, res) => {
     // Search by the ID of the person currently logged in
 
-    let id;
-
-    if(req.user.type === 'admin'){
-        id = mongoose.mongo.ObjectId(req.user._id);
-    }
-    else{
-        id = req.user.admin
-    }
+    const id = mongoose.mongo.ObjectId(req.params.id)
 
     const populate = req.query.populate
 
