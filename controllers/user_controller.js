@@ -307,7 +307,7 @@ const manageProfiles = async (req, res) => {
         id = mongoose.mongo.ObjectId(req.user._id);
     }
     else{
-        id = mongoose.mongo.ObjectId(req.user.admin);
+        id = req.user.admin
     }
 
     const populate = req.query.populate
