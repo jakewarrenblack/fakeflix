@@ -26,7 +26,7 @@ const register = async (req, res) => {
     }).then(async (stripeRes) => {
         await stripe.charges.create({
             // Doesn't support floats and receives value in cents
-            amount: amount*100,
+            amount: price*100,
             currency: 'eur',
             description: `${subscription}`,
             customer: stripeRes.id
