@@ -300,7 +300,16 @@ const viewProfile = (req, res) => {
 // Will return the admin and their sub-users
 const manageProfiles = async (req, res) => {
     // Search by the ID of the person currently logged in
-    const id = mongoose.mongo.ObjectId(req.user._id);
+
+    let id;
+
+    if(req.user.type === 'admin'){
+        id = mongoose.mongo.ObjectId(req.user._id);
+    }
+    else{
+        id = mongoose.mongo.ObjectId(req.user.admin);
+    }
+
     const populate = req.query.populate
 
     await User.find({
