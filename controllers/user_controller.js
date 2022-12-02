@@ -14,53 +14,50 @@ const subscriptions = {
 const register = async (req, res) => {
     let newUser = new User(req.body);
     newUser.password = bcrypt.hashSync(req.body.password, 10);
-
-    /*
-    user_schema uses faker to generate object IDs
-    I do this because I populate each fake user of type 'child' or 'user' (not admin)
-    with an admin ID, which is a reference to a real admin type object,
-
-    but doing this means we're overriding mongodb's generation of _id, and we have to do it ourselves
-    so since it's now a requirement from the user_schema, I generate one here...
-    */
     newUser._id = new mongoose.mongo.ObjectId();
-
     console.log(newUser);
-
     let key, price, subscription, email;
 
-    await newUser.save((err, user) => {
-        if (err) {
-            res.status(400).json({
-                // Give special response for 11000, because it's bound to be common
-                msg: err.code === 11000 ? 'A user account with this email already exists! Email must be unique.' : err.message,
-            });
-        } else {
-            user.password = undefined;
-            key = process.env.PK_TEST,
-            price = subscriptions[newUser.subscription],
-            subscription = newUser.subscription,
-            email = newUser.email
+    key = process.env.PK_TEST,
+    price = subscriptions[newUser.subscription],
+    subscription = newUser.subscription,
+    email = newUser.email
 
-             stripe.customers.create({
-                name: `${req.body.firstName} ${req.body.lastName}`,
-                email,
-                 // need to add a second step to the registration, swap form to a stripe form to get the token
-                 // passing user data and stripe token all together
-                source: req.body.body.token.id
-            }).then(async (stripeRes) => {
-                await stripe.charges.create({
-                    // Doesn't support floats and receives value in cents
-                    amount: parseInt(price) * 100,
-                    currency: 'eur',
-                    description: `${subscription}`,
-                    customer: stripeRes.id
-                }).then((stripeResponse) => res.status(200).json({
-                    stripeResponse
-                }))
-            })
-        }
-    });
+     stripe.customers.create({
+        name: `${req.body.firstName} ${req.body.lastName}`,
+        email,
+         // need to add a second step to the registration, swap form to a stripe form to get the token
+         // passing user data and stripe token all together
+        source: req.body.body.token.id
+    }).then(async (stripeRes) => {
+        await stripe.charges.create({
+            // Doesn't support floats and receives value in cents
+            amount: parseInt(price) * 100,
+            currency: 'eur',
+            description: `${subscription}`,
+            customer: stripeRes.id
+        }).then(async(stripeResponse) => {
+                newUser._doc = {
+                    ...newUser._doc,
+                    stripe_details: stripeResponse
+                }
+
+                await newUser.save((err, user) => {
+                    if (err) {
+                        res.status(400).json({
+                            // Give special response for 11000, because it's bound to be common
+                            msg: err.code === 11000 ? 'A user account with this email already exists! Email must be unique.' : err.message,
+                        });
+                    } else {
+                        res.status(200).json({
+                            msg: 'User registration successful!'
+                        })
+                    }
+                })
+        })
+    })
+
+
 };
 
 const login = (req, res) => {
