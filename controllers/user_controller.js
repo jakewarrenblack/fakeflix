@@ -54,15 +54,16 @@ const register = async (req, res) => {
 
 };
 
+// Verify that the email entered by a sub-user on the frontend belongs to an existing admin user
 const verifyAdmin = (req, res) => {
     User.findOne({
         email: req.body.email,
         type: 'admin'
     })
         .then((user) => {
-            if (!user || !user._id !== req.body.userId) {
+            if (!user) {
                 res.status(401).json({
-                    msg: "Error. That admin may not exist, or you are not a registered sub-user on this admin account.",
+                    msg: "Error. An admin with that email may not exist.",
                 });
             } else {
 
