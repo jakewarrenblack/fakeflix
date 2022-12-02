@@ -68,7 +68,7 @@ const verifyAdmin = (req, res) => {
             } else {
 
                 res.status(200).json({
-                    msg: "Success. Email belongs to the admin for this user.",
+                    msg: "Success. Email belongs to an existing admin.",
                     // Send the ID back so we can use this as the 'admin id'
                     id: user._id
                 });
