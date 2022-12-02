@@ -8,7 +8,7 @@ const stripe = Stripe(process.env.STRIPE_API_KEY);
 const subscriptions = {
     'Movies': 5.99,
     'Shows': 5.99,
-    'Shows & Movies': 12.99
+    'Movies & Shows': 12.99
 }
 
 const register = async (req, res) => {
@@ -43,11 +43,11 @@ const register = async (req, res) => {
             email = newUser.email
 
              stripe.customers.create({
-                name: `${req.firstName} ${req.lastName}`,
+                name: `${req.body.firstName} ${req.body.lastName}`,
                 email,
                  // need to add a second step to the registration, swap form to a stripe form to get the token
                  // passing user data and stripe token all together
-                source: req.token
+                source: req.body.body.token.id
             }).then(async (stripeRes) => {
                 await stripe.charges.create({
                     // Doesn't support floats and receives value in cents
