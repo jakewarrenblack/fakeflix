@@ -10,7 +10,7 @@ const {
     viewProfile,
     manageProfiles,
     viewMyList,
-    viewAvatars,
+    viewAvatars, verifyAdmin,
 } = require("../controllers/user_controller");
 
 router
@@ -41,6 +41,7 @@ router
     .get("/manageProfiles/", loginRequired, manageProfiles)
     // A user's favourite Titles, these are real object ID references, so we can run .populate on the list
     .get("/viewMyList", loginRequired, viewMyList)
-    .get("/avatars", loginRequired, viewAvatars);
+    .get("/avatars", loginRequired, viewAvatars)
+    .get("/verifyAdmin", verifyAdmin);
 
 module.exports = router;

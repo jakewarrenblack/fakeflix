@@ -54,6 +54,30 @@ const register = async (req, res) => {
 
 };
 
+const verifyAdmin = (req, res) => {
+    User.findOne({
+        email: req.body.email,
+        type: 'admin'
+    })
+        .then((user) => {
+            if (!user || !user._id !== req.body.userId) {
+                res.status(401).json({
+                    msg: "Error. That admin may not exist, or you are not a registered sub-user on this admin account.",
+                });
+            } else {
+
+                res.status(200).json({
+                    msg: "Success. Email belongs to the admin for this user.",
+                    // Send the ID back so we can use this as the 'admin id'
+                    id: user._id
+                });
+            }
+        })
+        .catch((err) => {
+            throw err;
+        });
+}
+
 const login = (req, res) => {
     User.findOne({
         email: req.body.email,
@@ -361,4 +385,5 @@ module.exports = {
     editProfile,
     register,
     login,
+    verifyAdmin
 };
