@@ -10,7 +10,7 @@ const {
     viewProfile,
     manageProfiles,
     viewMyList,
-    viewAvatars, verifyAdmin,
+    viewAvatars, verifyAdmin, getProfileByEmail
 } = require("../controllers/user_controller");
 
 router
@@ -38,10 +38,11 @@ router
     .delete("/delete/:id?", [loginRequired, adminRequired], deleteProfile)
     .get("/profile/", loginRequired, viewProfile)
     // View admin and all related users
-    .get("/manageProfiles/", loginRequired, manageProfiles)
+    .get("/manageProfiles/:id", loginRequired, manageProfiles)
     // A user's favourite Titles, these are real object ID references, so we can run .populate on the list
     .get("/viewMyList", loginRequired, viewMyList)
     .get("/avatars", loginRequired, viewAvatars)
-    .post("/verifyAdmin", verifyAdmin);
+    .post("/verifyAdmin", verifyAdmin)
+    .post("/getProfileByEmail", getProfileByEmail);
 
 module.exports = router;

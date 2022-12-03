@@ -102,8 +102,9 @@ const login = (req, res) => {
                         // Just let it be undefined if not specified
                         // To act as identifier for 'staff' members to add/update/delete Title listings
                         // Wouldn't make sense for 'customers' to be allowed to do this
-                        database_admin: user.database_admin
-                        // APP_KEY environment variable is our secret/private key
+                        database_admin: user.database_admin,
+                        // This will be null if user is of type admin.
+                        admin: req.body?.admin
                     }, process.env.APP_KEY, {
                         // The token should expire in two days
                         expiresIn: "2 days"
@@ -296,18 +297,52 @@ const viewProfile = (req, res) => {
         });
 };
 
+const getProfileByEmail = (req, res) => {
+    const email = req.body.email
+    // Pass in fields to populate, e.g. ?populate=avatar&populate=my_list
+    // Which will replace the IDs in these fields with their corresponding objects
+
+    try {
+        // connect to db and retrieve festival with :id
+        User.findOne({email: email})
+            .then((data) => {
+
+                if (data) {
+                    res.status(200).json(data);
+                } else {
+                    res.status(404).json({
+                        message: `User with email: ${email} not found`,
+                    });
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+                if (err.name === "CastError") {
+                    res.status(400).json({
+                        message: `Bad request, ${email} is not a valid email`,
+                    });
+                } else {
+                    res.status(500).json(err);
+                }
+            });
+    }
+    catch(e){
+        console.log(e)
+    }
+};
+
 // View all profiles related to one-another
 // Will return the admin and their sub-users
 const manageProfiles = async (req, res) => {
-    // Search by the ID of the person currently logged in
-
-    const id = mongoose.mongo.ObjectId(req.params.id)
-
+    // If they have an admin ID (they are not an admin) use this, otherwise they are an admin, so use their _id
     const populate = req.query.populate
 
-    await User.find({
-        $or: [{_id: id}, {admin: id}],
-    })
+    // if user is not an admin, perform a find on them, we need to get their admin ID to search with
+    // remember, we'll actually have it already if the user has just registered, just need to pass it down
+
+    const id = mongoose.mongo.ObjectId(req?.params?.id)
+
+    await User.find({ $or: [ { _id: id }, { admin: id } ] })
         .populate(populate)
         // Admin should appear first in the list
         .sort({type: 1})
@@ -388,5 +423,6 @@ module.exports = {
     editProfile,
     register,
     login,
-    verifyAdmin
+    verifyAdmin,
+    getProfileByEmail
 };
