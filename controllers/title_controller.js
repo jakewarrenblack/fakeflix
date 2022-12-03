@@ -75,7 +75,7 @@ const viewAll = (req, res) => {
     let {sort, limit, direction, secondFilter} = getQueryParams(req)
 
     if(!limit){
-        limit = 30
+        limit = 50
     }
 
     // Adding pagination
@@ -212,7 +212,7 @@ const getAllByType = (req, res) => {
     let {sort, limit, direction, secondFilter} = getQueryParams(req)
 
     if(!limit){
-        limit = 30
+        limit = 50
     }
 
     // Adding pagination
