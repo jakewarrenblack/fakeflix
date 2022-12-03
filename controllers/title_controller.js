@@ -74,11 +74,29 @@ const viewAll = (req, res) => {
     // e.g. a user with 'unrestricted' settings will see listings from all 3 maturity categories
     let {sort, limit, direction, secondFilter} = getQueryParams(req)
 
+    if(!limit){
+        limit = 30
+    }
+
+    // Adding pagination
+    let page;
+
+    // assign if param provided, or return first page by default
+    page = parseInt(req.query?.page) ?? 1
+
+    // new default limit will be 30
+    // because we want 3 rows with 10 movies/shows each to begin with
+
+
+
+    const skip = (page-1) * limit;
+
     // If second filter is present, combine the two
     // syntax for two combined filters: { $or : [{age_certification: {$in: ['TV-MA']}}, {age_certification: {$ne: null}}]}
     Title.find(secondFilter ? {$or: [req.filter, secondFilter]} : req.filter)
         .sort([[sort ?? 'title', direction === 'asc' ? 1 : -1]])
-        .limit(limit ?? 50)
+        .skip(skip)
+        .limit(limit)
         .then((data) => {
             //console.log(data);
             if (data.length > 0) {
@@ -193,12 +211,30 @@ const getAllByType = (req, res) => {
 
     let {sort, limit, direction, secondFilter} = getQueryParams(req)
 
+    if(!limit){
+        limit = 30
+    }
+
+    // Adding pagination
+    let page;
+
+    // assign if param provided, or return first page by default
+    page = parseInt(req.query?.page) ?? 1
+
+    // new default limit will be 30
+    // because we want 3 rows with 10 movies/shows each to begin with
+
+
+
+    const skip = (page-1) * limit;
+
 
     // If sort passed, apply the second filter to remove null values for the sort, improving sorting accuracy
     // spread operator to replace filter's existing 'type' attribute with the type received from params
     Title.find({...req.filter, type: type, ...secondFilter})
         .sort([[sort ?? 'title', direction === 'asc' ? 1 : -1]])
-        .limit(limit ?? 5)
+        .skip(skip)
+        .limit(limit)
         .then((data) => {
             if (data) {
                 res.status(200).json(data);
