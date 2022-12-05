@@ -495,6 +495,10 @@ const getRelated = (req, res) => {
             })
         }
         else{
+            // FIXME: In the case that we get a specific match, we only return that match, so maybe we found only 1 specific match
+            // In this case, we should populate the remaining 8 recommendations with general recommendations
+            // Maybe we run both of the above requests in either case?
+
             // in this case, we've got a specific match for all elements in our genres array
             res.status(200).json({
                 result
