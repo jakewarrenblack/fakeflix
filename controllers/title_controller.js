@@ -4,6 +4,8 @@ const validate_imdb_id = require("../utils/imdb_validate");
 const searchPipeline = require('../utils/search_pipeline')
 const axios = require('axios')
 const {model: User} = require("../models/user_schema");
+const {ge} = require("faker/lib/locales");
+const mongoose = require("mongoose");
 
 const getQueryParams = (req) => {
     let limit = req.query.limit && parseInt(req.query.limit);
@@ -455,6 +457,57 @@ const getShow = async (req, res) => {
     }
 }
 
+const getRelated = (req, res) => {
+    // annoyingly, genres isn't a real array in the db, it's a string,
+    // so converting to an array and removing non-alphanumeric characters (e.g. square brackets and quotation marks)
+    const cleanedGenres = req.body.genres.split(',').map((item) => item.replace(/[\W_]+/g," ").trim())
+
+
+    // if(myGenres){
+    //     console.log(myGenres)
+    // }
+
+    const id = mongoose.mongo.ObjectId(req.body._id)
+
+    // Find titles with the same genres, but exclude the title itself
+    Title.find({ genres:  req.body.genres, _id: {$ne: id}  }).limit(9).then((result) => {
+        if(result.length === 0){
+            // means nothing was found matching this exact array of genres, let's instead find titles that match any one of the genres
+
+            const match = cleanedGenres.map((genre) => {
+                return { 'genres': { $regex: genre, $options: 'i' }, }
+            })
+
+            // Again, exclude the title itself
+            // E.g. if we're looking at Batman, don't recommend Batman
+            Title.find({$or: match, _id: {$ne: id}}).limit(9).then((data) => {
+                if(data.length){
+                    res.status(200).json(data)
+                }
+                else{
+                    res.status(404).json({
+                        msg: 'None found.'
+                    })
+                }
+            }).catch((e) => {
+                console.log(e)
+                res.status(500).json(e)
+            })
+        }
+        else{
+            // in this case, we've got a specific match for all elements in our genres array
+            res.status(200).json({
+                result
+            });
+        }
+    }).catch((e) => {
+        console.log(e)
+        res.status(500).json(e)
+    })
+
+
+}
+
 
 module.exports = {
     viewAll,
@@ -464,5 +517,6 @@ module.exports = {
     createTitle,
     getShow,
     updateTitle,
-    deleteTitle
+    deleteTitle,
+    getRelated,
 };

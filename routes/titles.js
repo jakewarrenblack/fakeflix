@@ -10,7 +10,8 @@ const {
     getShow,
     createTitle,
     updateTitle,
-    deleteTitle
+    deleteTitle,
+    getRelated
 } = require("../controllers/title_controller");
 
 // Every Title route requires login, which we've applied in server.js, rather than to the /titles route, rather than to each path individually.
@@ -49,5 +50,7 @@ router.get("/id/:id", [loginRequired, checkSubscriptionType], getById);
 router.post("/create", [loginRequired, isDatabaseAdmin], createTitle);
 router.put("/update/:id", [loginRequired, isDatabaseAdmin], updateTitle);
 router.delete("/delete/:id", [loginRequired, isDatabaseAdmin], deleteTitle);
+
+router.post("/getRelated", loginRequired, getRelated);
 
 module.exports = router;
