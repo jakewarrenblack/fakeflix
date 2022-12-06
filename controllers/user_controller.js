@@ -104,7 +104,7 @@ const login = (req, res) => {
                         // Wouldn't make sense for 'customers' to be allowed to do this
                         database_admin: user.database_admin,
                         // This will be null if user is of type admin.
-                        admin: req.body?.admin
+                        admin: user.admin,
                     }, process.env.APP_KEY, {
                         // The token should expire in two days
                         expiresIn: "2 days"
