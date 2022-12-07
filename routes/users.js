@@ -44,6 +44,6 @@ router
     .get("/avatars", loginRequired, viewAvatars)
     .post("/verifyAdmin", verifyAdmin)
     .post("/getProfileByEmail", getProfileByEmail)
-    .post("/addToMyList", addToMyList);
+    .post("/addToMyList", loginRequired, addToMyList);
 
 module.exports = router;
