@@ -99,6 +99,7 @@ const login = (req, res) => {
                         subscription: user.subscription,
                         maturity_setting: user.maturity_setting,
                         type: user.type,
+                        my_list: user.my_list,
                         // Just let it be undefined if not specified
                         // To act as identifier for 'staff' members to add/update/delete Title listings
                         // Wouldn't make sense for 'customers' to be allowed to do this
@@ -371,12 +372,25 @@ const viewMyList = (req, res) => {
         .then((data) => {
             if (data.length) {
                 console.log(data);
-                if (data.length > 0) {
-                    res.status(200).json(data);
-                } else {
-                    res.status(404).json("No users found");
-                }
+                res.status(200).json(data);
             }
+            else {
+                res.status(404).json("No favourites found");
+            }
+        })
+        .catch((err) => {
+            console.log(err);
+            res.status(500).json(err);
+        });
+};
+
+const addToMyList = (req, res) => {
+    const id = () => mongoose.mongo.ObjectId(req.body.id);
+
+    User.findOneAndUpdate({_id: req.user._id}, { "$push": { "my_list": id } }, {new: true})
+        .then((response) => {
+            console.log(response);
+            res.status(200).json(response);
         })
         .catch((err) => {
             console.log(err);
@@ -424,5 +438,6 @@ module.exports = {
     register,
     login,
     verifyAdmin,
-    getProfileByEmail
+    getProfileByEmail,
+    addToMyList
 };

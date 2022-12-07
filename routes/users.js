@@ -10,7 +10,7 @@ const {
     viewProfile,
     manageProfiles,
     viewMyList,
-    viewAvatars, verifyAdmin, getProfileByEmail
+    viewAvatars, verifyAdmin, getProfileByEmail, addToMyList
 } = require("../controllers/user_controller");
 
 router
@@ -43,6 +43,7 @@ router
     .get("/viewMyList", loginRequired, viewMyList)
     .get("/avatars", loginRequired, viewAvatars)
     .post("/verifyAdmin", verifyAdmin)
-    .post("/getProfileByEmail", getProfileByEmail);
+    .post("/getProfileByEmail", getProfileByEmail)
+    .post("/addToMyList", addToMyList);
 
 module.exports = router;

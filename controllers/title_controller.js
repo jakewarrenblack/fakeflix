@@ -512,7 +512,6 @@ const getRelated = (req, res) => {
     })
 }
 
-
 module.exports = {
     viewAll,
     getByName,
