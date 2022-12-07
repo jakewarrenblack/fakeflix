@@ -385,9 +385,10 @@ const viewMyList = (req, res) => {
 };
 
 const addToMyList = (req, res) => {
-    const id = () => mongoose.mongo.ObjectId(req.body.id);
+    const id = req.body._id
 
-    User.findOneAndUpdate({_id: req.user._id}, { "$push": { "my_list": id } }, {new: true})
+    // $addToSet pushes to an array unless the value is already present, in which case it does nothing.
+    User.findOneAndUpdate({email: req.user.email}, {$addToSet: {"my_list" : id} }, {new: true})
         .then((response) => {
             console.log(response);
             res.status(200).json(response);
