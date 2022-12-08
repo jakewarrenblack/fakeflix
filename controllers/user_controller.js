@@ -363,16 +363,12 @@ const manageProfiles = async (req, res) => {
 
 
 const viewMyList = (req, res) => {
-    //  .find() expects this to be a function,
-    // generate a valid mongo user ID from the user ID string
-    const id = () => mongoose.mongo.ObjectId(req.user._id);
-    // Only returning username from User, so we could display e.g. 'joe.bloggs98's favourites' in the frontend
-    User.find({_id: id()}, "username")
+    User.findOne({email: req.user.email})
         .populate("my_list")
         .then((data) => {
-            if (data.length) {
+            if (data) {
                 console.log(data);
-                res.status(200).json(data);
+                res.status(200).json(data.my_list);
             }
             else {
                 res.status(404).json("No favourites found");

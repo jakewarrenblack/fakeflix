@@ -276,7 +276,7 @@ const createTitle = (req, res) => {
 
 
 const updateTitle = (req, res) => {
-    let id = req.params.id;
+    let id = mongoose.mongo.ObjectId(req.params.id);
     let body = req.body;
 
     Title.findByIdAndUpdate(id, body, {
