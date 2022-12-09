@@ -264,9 +264,7 @@ const createTitle = (req, res) => {
 
     newTitle.save((err, user) => {
         if (err) {
-            return res.status(400).json({
-                msg: err.message,
-            });
+            return res.status(400).json(err);
         } else {
             user.password = undefined;
             return res.status(201).json(user);
