@@ -264,9 +264,7 @@ const createTitle = (req, res) => {
 
     newTitle.save((err, user) => {
         if (err) {
-            return res.status(400).json({
-                msg: err.message,
-            });
+            return res.status(400).json(err);
         } else {
             user.password = undefined;
             return res.status(201).json(user);
@@ -276,7 +274,7 @@ const createTitle = (req, res) => {
 
 
 const updateTitle = (req, res) => {
-    let id = req.params.id;
+    let id = mongoose.mongo.ObjectId(req.params.id);
     let body = req.body;
 
     Title.findByIdAndUpdate(id, body, {
@@ -457,61 +455,61 @@ const getShow = async (req, res) => {
     }
 }
 
+/*
+    our data set doesn't have real arrays, they're actually strings,
+    so I take the string and convert it to a real array, with only alphanumeric characters
+    also, the data stores genres in random order, e.g.
+    monty python has genre ['comedy', 'european'], but if we search for ['european', 'comedy'] we won't find it,
+    so I get all possible permutations of the array to search by
+*/
+
+// source for this function: https://www.tutorialspoint.com/generating-all-possible-permutations-of-array-in-javascript
+const findPermutations = (arr = []) => {
+    let res = []
+    const helper = (arr2) => {
+        if (arr2.length==arr.length)
+            return res.push(arr2)
+        for(let e of arr)
+            if (!arr2.includes(e))
+                helper([...arr2, e])
+    };
+    helper([])
+    return res;
+};
+
 const getRelated = (req, res) => {
     // annoyingly, genres isn't a real array in the db, it's a string,
     // so converting to an array and removing non-alphanumeric characters (e.g. square brackets and quotation marks)
     const cleanedGenres = req.body.genres.split(',').map((item) => item.replace(/[\W_]+/g," ").trim())
 
+    // now arranging every possible permutation back into the original format, an array converted to a string, with each item wrapped in single quotes with a space between them
+    // also replace spaces with hyphens for e.g., PG-13 in age certifications. Hyphens were removed as part of special characters when we created cleanedGenres.
+    const possibleMatches = findPermutations(cleanedGenres).map((permutation) => {
+        return { genres: `[${permutation.map((item) => `'${item}'`).toString().replaceAll('"', "'").replaceAll(",'", ", '").replaceAll(' ', '-')}]` }
+    })
 
-    // if(myGenres){
-    //     console.log(myGenres)
-    // }
 
     const id = mongoose.mongo.ObjectId(req.body._id)
 
     // Find titles with the same genres, but exclude the title itself
-    Title.find({ genres:  req.body.genres, _id: {$ne: id}  }).limit(9).then((result) => {
-        if(result.length === 0){
-            // means nothing was found matching this exact array of genres, let's instead find titles that match any one of the genres
+    Title.find({ $or: possibleMatches, _id: {$ne: id}  }).limit(9).then((result) => {
+        if(result.length) {
 
-            const match = cleanedGenres.map((genre) => {
-                return { 'genres': { $regex: genre, $options: 'i' }, }
-            })
-
-            // Again, exclude the title itself
-            // E.g. if we're looking at Batman, don't recommend Batman
-            Title.find({$or: match, _id: {$ne: id}}).limit(9).then((data) => {
-                if(data.length){
-                    res.status(200).json(data)
-                }
-                else{
-                    res.status(404).json({
-                        msg: 'None found.'
-                    })
-                }
-            }).catch((e) => {
-                console.log(e)
-                res.status(500).json(e)
-            })
-        }
-        else{
-            // FIXME: In the case that we get a specific match, we only return that match, so maybe we found only 1 specific match
-            // In this case, we should populate the remaining 8 recommendations with general recommendations
-            // Maybe we run both of the above requests in either case?
-
-            // in this case, we've got a specific match for all elements in our genres array
             res.status(200).json({
                 result
             });
         }
+        else{
+            res.status(404).json({
+                msg: 'No recommendations found for this title.'
+            })
+        }
+
     }).catch((e) => {
         console.log(e)
         res.status(500).json(e)
     })
-
-
 }
-
 
 module.exports = {
     viewAll,

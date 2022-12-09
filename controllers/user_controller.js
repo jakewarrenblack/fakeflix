@@ -99,12 +99,13 @@ const login = (req, res) => {
                         subscription: user.subscription,
                         maturity_setting: user.maturity_setting,
                         type: user.type,
+                        my_list: user.my_list,
                         // Just let it be undefined if not specified
                         // To act as identifier for 'staff' members to add/update/delete Title listings
                         // Wouldn't make sense for 'customers' to be allowed to do this
                         database_admin: user.database_admin,
                         // This will be null if user is of type admin.
-                        admin: req.body?.admin
+                        admin: user.admin,
                     }, process.env.APP_KEY, {
                         // The token should expire in two days
                         expiresIn: "2 days"
@@ -362,21 +363,31 @@ const manageProfiles = async (req, res) => {
 
 
 const viewMyList = (req, res) => {
-    //  .find() expects this to be a function,
-    // generate a valid mongo user ID from the user ID string
-    const id = () => mongoose.mongo.ObjectId(req.user._id);
-    // Only returning username from User, so we could display e.g. 'joe.bloggs98's favourites' in the frontend
-    User.find({_id: id()}, "username")
+    User.findOne({email: req.user.email})
         .populate("my_list")
         .then((data) => {
-            if (data.length) {
+            if (data) {
                 console.log(data);
-                if (data.length > 0) {
-                    res.status(200).json(data);
-                } else {
-                    res.status(404).json("No users found");
-                }
+                res.status(200).json(data.my_list);
             }
+            else {
+                res.status(404).json("No favourites found");
+            }
+        })
+        .catch((err) => {
+            console.log(err);
+            res.status(500).json(err);
+        });
+};
+
+const addToMyList = (req, res) => {
+    const id = req.body._id
+
+    // $addToSet pushes to an array unless the value is already present, in which case it does nothing.
+    User.findOneAndUpdate({email: req.user.email}, {$addToSet: {"my_list" : id} }, {new: true})
+        .then((response) => {
+            console.log(response);
+            res.status(200).json(response);
         })
         .catch((err) => {
             console.log(err);
@@ -424,5 +435,6 @@ module.exports = {
     register,
     login,
     verifyAdmin,
-    getProfileByEmail
+    getProfileByEmail,
+    addToMyList
 };
