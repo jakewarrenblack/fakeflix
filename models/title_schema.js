@@ -31,21 +31,14 @@ const titleSchema = Schema(
         },
         age_certification: {
             // could be M, U, etc
-            type: String,
-            enum: [
-                "TV-MA",
-                "R",
-                "PG",
-                "TV-14",
-                "PG-13",
-                "TV-PG",
-                "TV-Y",
-                "TV-G",
-                "TV-Y7",
-                "G",
-                "NC-17",
+            // Allowing mixed but validate values
+            type: Schema.Types.Mixed,
+            required: [
+                // A 'user' or 'child' should inherit their subscription from their admin
+                // Only the admin themselves must choose a subscription type
+                validateAgeCerts,
+                "Age certification is required and must match existing formats.",
             ],
-            required: [true, "Age rating field is required"],
         },
         runtime: {
             type: Number,
@@ -80,6 +73,29 @@ const titleSchema = Schema(
     },
     {timestamps: true}
 );
+
+const vals = [
+    "TV-MA",
+    "R",
+    "PG",
+    "TV-14",
+    "PG-13",
+    "TV-PG",
+    "TV-Y",
+    "TV-G",
+    "TV-Y7",
+    "G",
+    "NC-17"
+];
+
+function validateAgeCerts() {
+    let value = this.age_certification
+
+    let dbValue = value.replace(/[\W_]+/g," ").trim().replace(' ', '-')
+
+    return !(!vals.includes(value) && !vals.includes(dbValue));
+}
+
 
 titleSchema.index({title: 'text'});
 
