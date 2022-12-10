@@ -10,7 +10,7 @@ const {
     viewProfile,
     manageProfiles,
     viewMyList,
-    viewAvatars, verifyAdmin, getProfileByEmail, addToMyList
+    viewAvatars, verifyAdmin, getProfileByEmail, addToMyList, getProfileById
 } = require("../controllers/user_controller");
 
 router
