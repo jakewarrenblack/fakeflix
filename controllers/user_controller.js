@@ -339,7 +339,7 @@ const getProfileById = (req, res) => {
 
     try {
         // connect to db and retrieve festival with :id
-        User.findOne({_id: id})
+        User.findOne({_id: id}).populate('avatar').populate('my_list')
             .then((data) => {
 
                 if (data) {
