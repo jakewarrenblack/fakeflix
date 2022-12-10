@@ -332,6 +332,40 @@ const getProfileByEmail = (req, res) => {
     }
 };
 
+const getProfileById = (req, res) => {
+    const id = req.body.id
+    // Pass in fields to populate, e.g. ?populate=avatar&populate=my_list
+    // Which will replace the IDs in these fields with their corresponding objects
+
+    try {
+        // connect to db and retrieve festival with :id
+        User.findOne({_id: id})
+            .then((data) => {
+
+                if (data) {
+                    res.status(200).json(data);
+                } else {
+                    res.status(404).json({
+                        message: `User with id: ${id} not found`,
+                    });
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+                if (err.name === "CastError") {
+                    res.status(400).json({
+                        message: `Bad request, ${id} is not a valid id`,
+                    });
+                } else {
+                    res.status(500).json(err);
+                }
+            });
+    }
+    catch(e){
+        console.log(e)
+    }
+};
+
 // View all profiles related to one-another
 // Will return the admin and their sub-users
 const manageProfiles = async (req, res) => {
@@ -436,5 +470,6 @@ module.exports = {
     login,
     verifyAdmin,
     getProfileByEmail,
-    addToMyList
+    addToMyList,
+    getProfileById
 };
