@@ -467,7 +467,7 @@ const getShow = async (req, res) => {
 const findPermutations = (arr = []) => {
     let res = []
     const helper = (arr2) => {
-        if (arr2.length==arr.length)
+        if (arr2.length===arr.length)
             return res.push(arr2)
         for(let e of arr)
             if (!arr2.includes(e))
@@ -485,7 +485,7 @@ const getRelated = (req, res) => {
     // now arranging every possible permutation back into the original format, an array converted to a string, with each item wrapped in single quotes with a space between them
     // also replace spaces with hyphens for e.g., PG-13 in age certifications. Hyphens were removed as part of special characters when we created cleanedGenres.
     const possibleMatches = findPermutations(cleanedGenres).map((permutation) => {
-        return { genres: `[${permutation.map((item) => `'${item}'`).toString().replaceAll('"', "'").replaceAll(",'", ", '").replaceAll(' ', '-')}]` }
+        return { genres: `[${permutation.map((item) => `'${item}'`).toString().replaceAll('"', "'").replaceAll(",'", ", '").replaceAll(/([a-zA-Z0-9])\s([a-zA-Z0-9])/g, '$1-$2')}]` }
     })
 
 
