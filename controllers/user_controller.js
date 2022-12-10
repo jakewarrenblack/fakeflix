@@ -129,6 +129,14 @@ const editProfile = async (req, res) => {
     let body = req.body;
     let admin = req.user.type === 'admin'
 
+    // delete null fields from the body
+    for(key in body){
+        let isNull = body[key] == null
+        if(isNull){
+            delete body[key]
+        }
+    }
+
     if (admin && id) {
         // if admin is modifying another user
 
@@ -178,7 +186,9 @@ const editProfile = async (req, res) => {
 
 // Extracting to be reusable
 const editMethod = async (id, body, res) => {
-    await User.findByIdAndUpdate(id, body, {
+
+
+    await User.findByIdAndUpdate(id,  body, {
         new: true,
     })
         .then((data) => {
