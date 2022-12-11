@@ -40,7 +40,7 @@ const register = async (req, res) => {
                     if (err) {
                         res.status(400).json({
                             // Give special response for 11000, because it's bound to be common
-                            msg: err.code === 11000 ? 'A user account with this email already exists! Email must be unique.' : err.message,
+                            msg: err.code === 11000 ? 'A user account with this email already exists! Email must be unique.' : err,
                         });
                     } else {
                         res.status(200).json({
