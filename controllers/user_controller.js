@@ -442,18 +442,20 @@ const addToMyList = (req, res) => {
 const removeFromList = (req, res) => {
     const id = req.body._id
 
-    // $addToSet pushes to an array unless the value is already present, in which case it does nothing.
-    User.findOneAndUpdate({email: req.user.email}, {$pullAll: {"my_list" : id} }, {new: true})
-        .then((response) => {
-            console.log(response);
-            res.status(200).json(response);
-        })
-        .catch((err) => {
-            console.log(err);
-            res.status(500).json(err);
+    User.findOneAndUpdate({ email: req.user.email }, {
+        $pullAll: {
+            "my_list": [mongoose.mongo.ObjectId(id)]
+        },
+    }).then((response) => {
+        console.log(response);
+        res.status(200).json({
+            msg: 'Success!'
         });
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).json(err);
+    });
 };
-
 
 
 const viewAvatars = (req, res) => {
