@@ -188,7 +188,7 @@ const getById = async (req, res) => {
     // now their filters will determine whether it's returned or not
 
     // checkFailingField will respond if there are failing fields, returns false if no failing fields (fields that are incompatible with maturity settings, e.g. a child won't get an 18+ film)
-    if (!checkFailingFields(req, filter, id, res)) {
+   // if (!checkFailingFields(req, filter, id, res)) {
         Title.findOne({_id: id})
             .limit(req.query.limit ?? 5)
             .then((data) => {
@@ -200,7 +200,7 @@ const getById = async (req, res) => {
                     });
                 }
             })
-    }
+    //}
 };
 
 // Because of our checkSubscriptionType middleware, we know that if a user gets to this point,
