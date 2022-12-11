@@ -102,7 +102,7 @@ const adminRequired = async (req, res, next) => {
         await User.findOne({_id: id}).then((data) => {
             if (data) {
                 // if we found the user they're looking for, read their admin ID
-                if (data.admin.toString() === req.user._id.toString()) {
+                if (data?.admin?.toString() === req.user._id.toString()) {
                     // if this is true, they are this user's admin, proceed with the request
                     next()
                 } else {
