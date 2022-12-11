@@ -1,46 +1,47 @@
-const search = (query) => ({
-    '$search': {
-        'index': 'default',
-        'text': {
-            'query': query,
-            'path': {
-                'wildcard': '*'
-            },
-            'fuzzy': {
-                // number of characters that can be changed to match the term
-                'maxEdits': 1,
-                // max number of variations on the search term to generate and search for
-                'maxExpansions': 100
+const search = (query) => [
+    {
+        '$search': {
+            'index': 'default',
+            'text': {
+                'query': query,
+                'path': {
+                    'wildcard': '*'
+                },
+                'fuzzy': {
+                    // number of characters that can be changed to match the term
+                    'maxEdits': 1,
+                    // max number of variations on the search term to generate and search for
+                    'maxExpansions': 100
+                }
             }
         }
-    },
-})
+    }
+]
 
 const searchAndMatch = (query, filter) => [{
     '$search': {
-        'index': 'default',
-        'text': {
-            'query': query,
-            'path': {
-                'wildcard': '*'
-            },
-            'fuzzy': {
-                // number of characters that can be changed to match the term
-                'maxEdits': 1,
-                // max number of variations on the search term to generate and search for
-                'maxExpansions': 100
+            'index': 'default',
+            'text': {
+                'query': query,
+                'path': {
+                    'wildcard': '*'
+                },
+                'fuzzy': {
+                    // number of characters that can be changed to match the term
+                    'maxEdits': 1,
+                    // max number of variations on the search term to generate and search for
+                    'maxExpansions': 100
+                }
             }
-        }
+        },
     },
-},
-    {
-        '$match': {
-            // We have to spread the filter object to apply its individual attributes to the match
-            ...filter
-        }
-
-
-    }]
+    //{
+        // '$match': {
+        //     // We have to spread the filter object to apply its individual attributes to the match
+        //     ...filter
+        // }
+    //}
+    ]
 
 const searchMatchSort = (query, filter, sortBy, direction) => [{
     '$search': {
@@ -59,13 +60,13 @@ const searchMatchSort = (query, filter, sortBy, direction) => [{
         }
     },
 },
-    {
-        '$match': {
-            // We have to spread the filter object to apply its individual attributes to the match
-            ...filter
-        },
-
-    },
+    // {
+    //     '$match': {
+    //         // We have to spread the filter object to apply its individual attributes to the match
+    //         ...filter
+    //     },
+    //
+    // },
 ]
 
 
