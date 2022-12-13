@@ -32,7 +32,11 @@ const hasImage = (file) => {
 }
 
 const createData = (req, res) => {
-    let avatarData = hasImage(req.file) ?? req.body
+    let avatarData = {
+        img: `https://ca1-avatars.s3.eu-west-1.amazonaws.com/${req.body.img}`,
+        name: req.body.name ?? faker.word.interjection()
+    }
+
 
     Avatar.create(avatarData)
         .then((data) => {

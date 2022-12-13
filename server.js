@@ -18,6 +18,7 @@ const cors = require('cors')
 
 app.use(cors())
 
+
 app.use((req, res, next) => {
     let header = req.headers?.authorization?.split(" ");
     if (header && header[0] === "Bearer")
@@ -26,11 +27,14 @@ app.use((req, res, next) => {
     next();
 });
 
+
 app.use((req, res, next) => {
     console.log(req?.user);
     // it'd hang if we didn't tell it next() or give some response (which would end it)
     next();
 });
+
+
 
 app.set('views', path.join(__dirname, 'views'))
 // Using the ejs template engine
@@ -43,6 +47,9 @@ app.use("/api/users", require("./routes/users"));
 app.use("/api/avatars", require("./routes/avatars"));
 app.use("/api/titles", require("./routes/titles"));
 // app.post('/charge', charge)
+
+
+
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
